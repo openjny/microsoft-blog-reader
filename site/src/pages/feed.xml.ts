@@ -15,7 +15,7 @@ export function GET(context: APIContext) {
       link: article.link,
       description: stripHtml(article.description),
       author: article.author ?? undefined,
-      categories: article.category ? [article.category] : undefined,
+      categories: article.board ? [article.board] : undefined,
     })),
     customData: "<language>en-us</language>",
   });

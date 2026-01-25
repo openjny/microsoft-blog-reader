@@ -40,7 +40,8 @@ logger = logging.getLogger(__name__)
 
 def init_database(conn: sqlite3.Connection) -> None:
     """Initialize database schema."""
-    conn.executescript("""
+    conn.executescript(
+        """
         CREATE TABLE IF NOT EXISTS articles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             guid TEXT UNIQUE NOT NULL,
@@ -49,20 +50,25 @@ def init_database(conn: sqlite3.Connection) -> None:
             description TEXT,
             pub_date TEXT NOT NULL,
             author TEXT,
-            category TEXT,
+            board TEXT,
             created_at TEXT DEFAULT (datetime('now')),
             updated_at TEXT DEFAULT (datetime('now'))
         );
 
         CREATE INDEX IF NOT EXISTS idx_articles_pub_date ON articles(pub_date DESC);
-        CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category);
-    """)
+        CREATE INDEX IF NOT EXISTS idx_articles_board ON articles(board);
+    """
+    )
     conn.commit()
     logger.info("Database schema initialized")
 
 
-def extract_category(url: str) -> str | None:
-    """Extract category from article URL path."""
+def extract_board(url: str) -> str | None:
+    """Extract board identifier from article URL path.
+
+    The board is extracted from the URL pattern: /t5/{board}/...
+    Example: /t5/apps-on-azure-blog/... -> 'apps-on-azure-blog'
+    """
     match = re.search(r"/t5/([^/]+)/", url)
     if match:
         return match.group(1)
@@ -137,7 +143,7 @@ def upsert_articles(conn: sqlite3.Connection, feed: feedparser.FeedParserDict) -
         description = entry.get("summary", "") or entry.get("description", "")
         pub_date = parse_pub_date(entry)
         author = entry.get("author", "") or entry.get("dc_creator", "")
-        category = extract_category(link)
+        board = extract_board(link)
 
         # Check if article exists
         cursor.execute("SELECT id FROM articles WHERE guid = ?", (guid,))
@@ -157,10 +163,10 @@ def upsert_articles(conn: sqlite3.Connection, feed: feedparser.FeedParserDict) -
             # Insert new article
             cursor.execute(
                 """
-                INSERT INTO articles (guid, title, link, description, pub_date, author, category)
+                INSERT INTO articles (guid, title, link, description, pub_date, author, board)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-                (guid, title, link, description, pub_date, author, category),
+                (guid, title, link, description, pub_date, author, board),
             )
             new_count += 1
 
@@ -188,9 +194,7 @@ def main() -> int:
         cursor.execute("SELECT COUNT(*) FROM articles")
         total_count = cursor.fetchone()[0]
 
-        logger.info(
-            f"Process completed successfully. {new_count} new, {total_count} total articles."
-        )
+        logger.info(f"Process completed successfully. {new_count} new, {total_count} total articles.")
         return 0
 
     except Exception as e:

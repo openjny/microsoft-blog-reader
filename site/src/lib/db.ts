@@ -12,7 +12,7 @@ export interface Article {
   description: string | null;
   pub_date: string;
   author: string | null;
-  category: string | null;
+  board: string | null;
 }
 
 function getDb() {
@@ -22,7 +22,7 @@ function getDb() {
 export function getArticles(limit = 30): Article[] {
   const db = getDb();
   const stmt = db.prepare(`
-    SELECT id, guid, title, link, description, pub_date, author, category
+    SELECT id, guid, title, link, description, pub_date, author, board
     FROM articles
     ORDER BY pub_date DESC
     LIMIT ?
@@ -35,7 +35,7 @@ export function getArticles(limit = 30): Article[] {
 export function getAllArticles(): Article[] {
   const db = getDb();
   const stmt = db.prepare(`
-    SELECT id, guid, title, link, description, pub_date, author, category
+    SELECT id, guid, title, link, description, pub_date, author, board
     FROM articles
     ORDER BY pub_date DESC
   `);
@@ -44,27 +44,27 @@ export function getAllArticles(): Article[] {
   return articles;
 }
 
-export function getArticlesByCategory(category: string): Article[] {
+export function getArticlesByBoard(board: string): Article[] {
   const db = getDb();
   const stmt = db.prepare(`
-    SELECT id, guid, title, link, description, pub_date, author, category
+    SELECT id, guid, title, link, description, pub_date, author, board
     FROM articles
-    WHERE category = ?
+    WHERE board = ?
     ORDER BY pub_date DESC
   `);
-  const articles = stmt.all(category) as Article[];
+  const articles = stmt.all(board) as Article[];
   db.close();
   return articles;
 }
 
-export function getAllCategories(): string[] {
+export function getAllBoards(): string[] {
   const db = getDb();
   const stmt = db.prepare(`
-    SELECT DISTINCT category FROM articles WHERE category IS NOT NULL ORDER BY category
+    SELECT DISTINCT board FROM articles WHERE board IS NOT NULL ORDER BY board
   `);
-  const rows = stmt.all() as { category: string }[];
+  const rows = stmt.all() as { board: string }[];
   db.close();
-  return rows.map((r) => r.category);
+  return rows.map((r) => r.board);
 }
 
 export function getTotalCount(): number {
@@ -92,17 +92,17 @@ export function formatDate(isoDate: string): string {
   });
 }
 
-export function formatCategory(slug: string | null): string {
-  if (!slug) return "";
+export function formatBoard(board: string | null): string {
+  if (!board) return "";
 
   // Try to get official name from metadata
-  const metadata = getBlogMetadata(slug);
+  const metadata = getBlogMetadata(board);
   if (metadata) {
-    return metadata.name;
+    return metadata.displayName;
   }
 
   // Fallback: convert slug to title case
-  return slug
+  return board
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");

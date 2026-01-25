@@ -1,5 +1,5 @@
 ---
-import { type Article, stripHtml, formatDate, formatCategory } from "../lib/db";
+import { type Article, stripHtml, formatDate, formatBoard } from "../lib/db";
 import { getBlogUrl } from "../lib/blogs";
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 const { article } = Astro.props;
 const description = stripHtml(article.description);
 const truncatedDescription = description.length > 200 ? description.slice(0, 200) + "..." : description;
-const blogUrl = getBlogUrl(article.category);
+const blogUrl = getBlogUrl(article.board);
 ---
 
 <article class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
@@ -21,7 +21,7 @@ const blogUrl = getBlogUrl(article.category);
         <span>{article.author}</span>
       </>
     )}
-    {article.category && (
+    {article.board && (
       <>
         <span>•</span>
         {blogUrl ? (
@@ -31,11 +31,11 @@ const blogUrl = getBlogUrl(article.category);
             target="_blank"
             rel="noopener noreferrer"
           >
-            {formatCategory(article.category)}
+            {formatBoard(article.board)}
           </a>
         ) : (
           <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">
-            {formatCategory(article.category)}
+            {formatBoard(article.board)}
           </span>
         )}
       </>

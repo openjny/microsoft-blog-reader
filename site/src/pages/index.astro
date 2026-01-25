@@ -1,98 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import ArticleCard from "../components/ArticleCard.astro";
-import { getAllArticles, getTotalCount, stripHtml, formatDate, formatCategory } from "../lib/db";
-import { getBlogUrl } from "../lib/blogs";
+import { getAllArticles, getTotalCount, stripHtml, formatDate, formatBoard } from "../lib/db";
+import { getBlogUrl, GROUPS, BOARDS, ALIASES } from "../lib/blogs";
 
 const articles = getAllArticles();
 const totalCount = getTotalCount();
-
-// Simplified category groups (mapped by blog_id for stability)
-const CATEGORY_GROUPS: Record<string, string[]> = {
-  "Azure": [
-    // AI
-    "aiplatformblog", "azure-ai-foundry-blog", "azure-ai-services-blog", "machinelearningblog", "mixed-reality-link", "themixedrealityblog",
-    // Analytics
-    "analyticsonazure", "azuresynapseanalyticsblog",
-    // Arc
-    "azurearcblog",
-    // Architecture
-    "azurearchitectureblog", "azureforisvandstartupstechnicalblog", "microsoftmechanicsblog", "microsoftmissioncriticalblog", "startupsatmicrosoftblog",
-    // Cloud Infrastructure
-    "azurecompute", "azureinfragurus", "azureinfrastructureblog", "azurestackblog", "azurestorageblog",
-    // Containers
-    "containers",
-    // Data
-    "azuredatablog", "azuredataexplorer", "azuredatafactoryblog", "dataarchitectureblog", "microsoft_graph_data_connect_for_sharepo", "microsoftdatamigration",
-    // Database
-    "adformysql", "adforpostgresql", "azuresqlblog", "oracleonazureblog", "sqlserver", "sqlserversupport", "ssis",
-    // Databases
-    "azuredbsupport",
-    // Development
-    "azuredevcommunityblog", "azurefederaldeveloperconnect", "educatordeveloperblog", "studentdeveloperblog",
-    // Finops
-    "finopsblog",
-    // Governance
-    "azuregovernanceandmanagementblog",
-    // HPC
-    "azurehighperformancecomputingblog",
-    // Linux
-    "linuxandopensourceblog",
-    // Networking
-    "azurenetworkingblog", "azurenetworksecurityblog", "networkingblog",
-    // PaaS
-    "adsapiblog", "appsonazureblog", "azurecommunicationservicesblog", "azureconfidentialcomputingblog", "azuremapsblog", "azurepaasblog", "azurespaceblog", "modernizationbestpracticesblog", "modernworkappconsult",
-    // SAP
-    "sapapplications",
-    // Virtualization
-    "azurevirtualdesktopblog", "fslogix-blog",
-  ],
-  "Microsoft 365": [
-    // Collaboration
-    "microsoftvivablog", "viva_amplify_blog", "viva_connections_blog", "viva_engage_blog", "viva_glint_blog", "viva_glint_partnersblog-board", "viva_insights_blog", "viva_learning_blog", "vivapulse-blog", "vivasales-blog",
-    // Copilot
-    "microsoft365copilotblog", "securitycopilotblog",
-    // Exchange
-    "exchange",
-    // Microsoft 365
-    "m365gcchcommunityhubblog-board", "microsoft365businessblog", "microsoft365insiderblog", "microsoft_365_archive_blog", "microsoft_365_backup_blog", "microsoft_365blog", "office365businessappsblog",
-    // Outlook
-    "outlook",
-    // Productivity
-    "excelblog", "microsoftedgeinsider", "microsoftformsblog", "microsoftteamsblog", "microsoftteamscommunityblog", "microsoftteamssupport", "officeeos", "onedriveblog", "plannerblog", "projectblog", "projectsupport", "sharepoint_embedded", "sharepoint_premium_blog", "skype_for_business_blog", "streamblog", "teamsfreeblog",
-  ],
-  "Security": [
-    // Identity
-    "accessblog", "microsoft-entra-blog",
-    // Security
-    "azurepurviewblog", "coreinfrastructureandsecurityblog", "defenderexternalattacksurfacemgmtblog", "defenderthreatintelligence", "microsoft-security-baselines", "microsoft-security-blog", "microsoftdefenderatpblog", "microsoftdefendercloudblog", "microsoftdefenderforoffice365blog", "microsoftdefenderiotblog", "microsoftsecurityexperts", "microsoftsentinelblog", "microsoftthreatprotectionblog", "vulnerability-management",
-    // SysInternal
-    "sysinternals-blog",
-  ],
-  "Others": [
-    // Communities
-    "communitynewsdesk", "educationblog", "healthcareandlifesciencesblog", "iltcommunicationblog", "manufacturing", "marketplace-blog", "microsoftindustryblog", "microsoftlearnblog", "mvp-blog", "nonprofittechies", "publicsectorblog",
-    // Endpoints
-    "configurationmanagerblog", "devicemanagementmicrosoft", "intunecustomersuccess", "microsoftintuneblog", "systemcenterblog",
-    // Fast Track
-    "fasttrackblog", "fasttrackforazureblog",
-    // Hardware
-    "hardwaredevcenter", "microsoftdeviceecosystemplatformblog", "surfaceitpro",
-    // IIS
-    "iis-support-blog",
-    // IOT
-    "iotblog",
-    // ITOPS
-    "itopstalkblog",
-    // Others
-    "askds", "azurelabservicesblog", "azuremigrationblog", "azureobservabilityblog", "azuretoolsblog", "corporate_communications_blog", "drivingadoptionblog", "filecab", "integrationsonazureblog", "messagingonazureblog", "microsoftusbblog", "smallbasic", "spblog", "weeklyroundupblog",
-    // Partners
-    "partnermarketingasaserviceblog-board", "partnernews",
-    // Windows
-    "windows-admin-center-blog", "windows-itpro-blog", "windowsdriverdev", "windowshardwarecertification",
-  ],
-};
-const metaCategories = Object.keys(CATEGORY_GROUPS);
 
 // Prepare article data for client-side filtering
 const articlesData = articles.map((a) => {
@@ -104,11 +17,19 @@ const articlesData = articles.map((a) => {
     pubDate: a.pub_date,
     pubDateFormatted: formatDate(a.pub_date),
     author: a.author,
-    category: a.category,
-    categoryFormatted: formatCategory(a.category),
-    blogUrl: getBlogUrl(a.category) || null,
+    board: a.board,
+    boardFormatted: formatBoard(a.board),
+    blogUrl: getBlogUrl(a.board) || null,
   };
 });
+
+// Extract group-to-boardIds mapping for client-side filtering
+const groupBoardIds: Record<string, string[]> = {};
+for (const group of GROUPS) {
+  groupBoardIds[group] = Object.entries(BOARDS)
+    .filter(([, meta]) => meta.group === group)
+    .map(([boardId]) => boardId);
+}
 ---
 
 <Layout title="Microsoft Blog Reader">
@@ -125,14 +46,14 @@ const articlesData = articles.map((a) => {
         />
       </div>
       <div class="sm:w-48">
-        <label for="category-select" class="sr-only">Filter by category</label>
+        <label for="group-select" class="sr-only">Filter by group</label>
         <select
-          id="category-select"
+          id="group-select"
           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
         >
-          <option value="">All Categories</option>
-          {metaCategories.map((cat) => (
-            <option value={cat}>{cat}</option>
+          <option value="">All Groups</option>
+          {GROUPS.map((group) => (
+            <option value={group}>{group}</option>
           ))}
         </select>
       </div>
@@ -164,12 +85,12 @@ const articlesData = articles.map((a) => {
   </div>
 </Layout>
 
-<script define:vars={{ articlesData, CATEGORY_GROUPS }}>
+<script define:vars={{ articlesData, groupBoardIds, ALIASES }}>
   const ITEMS_PER_PAGE = 30;
   let displayCount = ITEMS_PER_PAGE;
 
   const searchInput = document.getElementById('search-input');
-  const categorySelect = document.getElementById('category-select');
+  const groupSelect = document.getElementById('group-select');
   const articleList = document.getElementById('article-list');
   const resultCount = document.getElementById('result-count');
   const noResults = document.getElementById('no-results');
@@ -179,21 +100,27 @@ const articlesData = articles.map((a) => {
   // Initialize from URL params
   const urlParams = new URLSearchParams(window.location.search);
   const initialQuery = urlParams.get('q') || '';
-  const initialCategory = urlParams.get('category') || '';
+  const initialGroup = urlParams.get('group') || '';
 
   searchInput.value = initialQuery;
-  categorySelect.value = initialCategory;
+  groupSelect.value = initialGroup;
 
-  // Normalize category ID for comparison (remove hyphens, underscores, lowercase)
-  function normalizeCategory(s) {
-    if (!s) return '';
-    return s.toLowerCase().replace(/[-_]/g, '').replace(/blog$/, '');
+  /**
+   * Normalize a board name to canonical form.
+   * Removes hyphens and underscores, converts to lowercase.
+   */
+  function normalizeBoard(board) {
+    if (!board) return '';
+    return board.toLowerCase().replace(/[-_]/g, '');
   }
 
-  // Build normalized lookup map for CATEGORY_GROUPS
-  const normalizedCategoryMap = {};
-  for (const [group, blogIds] of Object.entries(CATEGORY_GROUPS)) {
-    normalizedCategoryMap[group] = blogIds.map(id => normalizeCategory(id));
+  /**
+   * Resolve a raw board name to its canonical boardId.
+   * Applies normalization and then checks aliases.
+   */
+  function resolveBoardId(board) {
+    const normalized = normalizeBoard(board);
+    return ALIASES[normalized] ?? normalized;
   }
 
   function escapeHtml(str) {
@@ -213,10 +140,10 @@ const articlesData = articles.map((a) => {
       ? `<span>•</span><span>${escapeHtml(article.author)}</span>` 
       : '';
 
-    const categoryHtml = article.categoryFormatted 
+    const boardHtml = article.boardFormatted 
       ? article.blogUrl
-        ? `<span>•</span><a href="${escapeHtml(article.blogUrl)}" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium hover:bg-blue-200 transition-colors" target="_blank" rel="noopener noreferrer">${escapeHtml(article.categoryFormatted)}</a>`
-        : `<span>•</span><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">${escapeHtml(article.categoryFormatted)}</span>`
+        ? `<span>•</span><a href="${escapeHtml(article.blogUrl)}" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium hover:bg-blue-200 transition-colors" target="_blank" rel="noopener noreferrer">${escapeHtml(article.boardFormatted)}</a>`
+        : `<span>•</span><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">${escapeHtml(article.boardFormatted)}</span>`
       : '';
 
     const descHtml = truncatedDesc 
@@ -228,7 +155,7 @@ const articlesData = articles.map((a) => {
         <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-2">
           <time datetime="${article.pubDate}">${article.pubDateFormatted}</time>
           ${authorHtml}
-          ${categoryHtml}
+          ${boardHtml}
         </div>
         <h2 class="text-xl font-semibold mb-2">
           <a href="${escapeHtml(article.link)}" class="text-gray-900 hover:text-blue-600 transition-colors" target="_blank" rel="noopener noreferrer">
@@ -242,7 +169,7 @@ const articlesData = articles.map((a) => {
 
   function filterArticles() {
     const query = searchInput.value.toLowerCase().trim();
-    const category = categorySelect.value;
+    const selectedGroup = groupSelect.value;
 
     let filtered = articlesData;
 
@@ -255,12 +182,13 @@ const articlesData = articles.map((a) => {
       });
     }
 
-    // Filter by category group (using normalized blog_id)
-    if (category) {
-      const normalizedIds = normalizedCategoryMap[category] || [];
+    // Filter by group (using normalized boardId with alias resolution)
+    if (selectedGroup) {
+      const boardIdsInGroup = groupBoardIds[selectedGroup] || [];
       filtered = filtered.filter(a => {
-        const normalizedArticleCategory = normalizeCategory(a.category);
-        return normalizedIds.includes(normalizedArticleCategory);
+        if (!a.board) return false;
+        const resolvedBoardId = resolveBoardId(a.board);
+        return boardIdsInGroup.includes(resolvedBoardId);
       });
     }
 
@@ -274,7 +202,7 @@ const articlesData = articles.map((a) => {
     // Update URL params
     const params = new URLSearchParams();
     if (searchInput.value) params.set('q', searchInput.value);
-    if (categorySelect.value) params.set('category', categorySelect.value);
+    if (groupSelect.value) params.set('group', groupSelect.value);
     const newUrl = params.toString() 
       ? `${window.location.pathname}?${params.toString()}`
       : window.location.pathname;
@@ -300,7 +228,7 @@ const articlesData = articles.map((a) => {
 
     // Update result count
     const total = articlesData.length;
-    if (searchInput.value || categorySelect.value) {
+    if (searchInput.value || groupSelect.value) {
       resultCount.textContent = `Found ${filtered.length} articles (${total} total)`;
     } else {
       resultCount.textContent = `Showing latest ${Math.min(displayCount, filtered.length)} of ${total} articles`;
@@ -315,7 +243,7 @@ const articlesData = articles.map((a) => {
     debounceTimer = setTimeout(updateDisplay, 300);
   });
 
-  categorySelect.addEventListener('change', () => {
+  groupSelect.addEventListener('change', () => {
     displayCount = ITEMS_PER_PAGE; // Reset on filter change
     updateDisplay();
   });
@@ -326,7 +254,7 @@ const articlesData = articles.map((a) => {
   });
 
   // Initial render if URL has params
-  if (initialQuery || initialCategory) {
+  if (initialQuery || initialGroup) {
     updateDisplay();
   }
 </script>
