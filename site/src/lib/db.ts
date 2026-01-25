@@ -85,11 +85,19 @@ export function stripHtml(html: string | null): string {
 
 export function formatDate(isoDate: string): string {
   const date = new Date(isoDate);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
+  const timeStr = date.toLocaleString("en-US", {
     month: "short",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
   });
+  // Get timezone offset in hours:minutes format
+  const offset = -date.getTimezoneOffset();
+  const sign = offset >= 0 ? "+" : "-";
+  const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, "0");
+  const minutes = String(Math.abs(offset) % 60).padStart(2, "0");
+  return `${timeStr} (${sign}${hours}:${minutes})`;
 }
 
 export function formatBoard(board: string | null): string {

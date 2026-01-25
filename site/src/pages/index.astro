@@ -10,6 +10,9 @@ const totalCount = getTotalCount();
 // Prepare article data for client-side filtering
 const articlesData = articles.map((a) => {
   const group = a.board ? getBoardGroup(a.board) : "Others";
+  // Get local date for grouping (same as formatDate uses)
+  const localDate = new Date(a.pub_date);
+  const localDateStr = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
   return {
     id: a.id,
     title: a.title,
@@ -17,6 +20,7 @@ const articlesData = articles.map((a) => {
     description: stripHtml(a.description),
     pubDate: a.pub_date,
     pubDateFormatted: formatDate(a.pub_date),
+    pubDateLocal: localDateStr,
     author: a.author,
     board: a.board,
     boardFormatted: formatBoard(a.board),
@@ -104,23 +108,28 @@ for (const group of GROUPS) {
   <div id="article-list" class="space-y-4">
     {(() => {
       const initial = articles.slice(0, 30);
-      let lastDate = '';
-      return initial.map((article) => {
-        const currentDate = article.pub_date.split('T')[0];
-        const showDateHeader = currentDate !== lastDate;
-        lastDate = currentDate;
+      // Pre-compute local dates for all articles
+      const articlesWithDates = initial.map((article) => {
+        const pubDateObj = new Date(article.pub_date);
+        const localDate = `${pubDateObj.getFullYear()}-${String(pubDateObj.getMonth() + 1).padStart(2, '0')}-${String(pubDateObj.getDate()).padStart(2, '0')}`;
+        return { article, pubDateObj, localDate };
+      });
+      
+      return articlesWithDates.map((item, index) => {
+        const nextItem = articlesWithDates[index + 1];
+        const showDateSeparator = nextItem && nextItem.localDate !== item.localDate;
         return (
           <>
-            {showDateHeader && (
-              <div class="date-separator flex items-center gap-3 py-2" data-date={currentDate}>
+            <ArticleCard article={item.article} />
+            {showDateSeparator && (
+              <div class="date-separator flex items-center gap-3 py-2" data-date={item.localDate}>
                 <div class="h-px flex-1 bg-gray-200" />
                 <span class="text-sm font-medium text-gray-500 whitespace-nowrap">
-                  {new Date(currentDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                  {item.pubDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
                 <div class="h-px flex-1 bg-gray-200" />
               </div>
             )}
-            <ArticleCard article={article} />
           </>
         );
       });
@@ -194,7 +203,7 @@ for (const group of GROUPS) {
               .replace(/"/g, '&quot;');
   }
   function renderDateSeparator(dateStr) {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + 'T00:00:00');
     const formatted = date.toLocaleDateString('en-US', { 
       weekday: 'short', 
       month: 'short', 
@@ -327,14 +336,14 @@ for (const group of GROUPS) {
       loadMoreContainer.classList.add('hidden');
     } else {
       let html = '';
-      let lastDate = '';
-      for (const article of toShow) {
-        const currentDate = article.pubDate.split('T')[0];
-        if (currentDate !== lastDate) {
-          html += renderDateSeparator(currentDate);
-          lastDate = currentDate;
-        }
+      for (let i = 0; i < toShow.length; i++) {
+        const article = toShow[i];
+        const nextArticle = toShow[i + 1];
         html += renderArticle(article);
+        // Show separator after this article if next article has different date
+        if (nextArticle && nextArticle.pubDateLocal !== article.pubDateLocal) {
+          html += renderDateSeparator(article.pubDateLocal);
+        }
       }
       articleList.innerHTML = html;
       articleList.classList.remove('hidden');
