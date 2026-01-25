@@ -1,9 +1,8 @@
 {
-  "generated_at": "2026-01-25T15:49:42.392626+00:00",
+  "generated_at": "2026-01-25T16:03:13.768402+00:00",
   "total_count": 20,
   "articles": [
     {
-      "id": 1,
       "guid": "https://techcommunity.microsoft.com/t5/healthcare-and-life-sciences/supercharging-sharepoint-metadata-with-the-knowledge-agent-in/ba-p/4488917",
       "title": "Supercharging SharePoint Metadata with the Knowledge Agent in Microsoft 365 Copilot",
       "link": "https://techcommunity.microsoft.com/t5/healthcare-and-life-sciences/supercharging-sharepoint-metadata-with-the-knowledge-agent-in/ba-p/4488917",
@@ -13,7 +12,6 @@
       "category": "healthcare-and-life-sciences"
     },
     {
-      "id": 2,
       "guid": "https://techcommunity.microsoft.com/t5/ilt-communications-blog/course-retirement-announcement-az-1010-and-ms-4007/ba-p/4488913",
       "title": "Course Retirement Announcement: AZ-1010 and MS-4007",
       "link": "https://techcommunity.microsoft.com/t5/ilt-communications-blog/course-retirement-announcement-az-1010-and-ms-4007/ba-p/4488913",
@@ -23,7 +21,6 @@
       "category": "ilt-communications-blog"
     },
     {
-      "id": 3,
       "guid": "https://techcommunity.microsoft.com/t5/ilt-communications-blog/title-plan-update-january-23-2026/ba-p/4488912",
       "title": "Title Plan Update - January 23, 2026",
       "link": "https://techcommunity.microsoft.com/t5/ilt-communications-blog/title-plan-update-january-23-2026/ba-p/4488912",
@@ -33,7 +30,6 @@
       "category": "ilt-communications-blog"
     },
     {
-      "id": 4,
       "guid": "https://techcommunity.microsoft.com/t5/apps-on-azure-blog/how-to-connect-azure-sre-agent-to-azure-mcp/ba-p/4488905",
       "title": "How to Connect Azure SRE Agent to Azure MCP",
       "link": "https://techcommunity.microsoft.com/t5/apps-on-azure-blog/how-to-connect-azure-sre-agent-to-azure-mcp/ba-p/4488905",
@@ -43,7 +39,6 @@
       "category": "apps-on-azure-blog"
     },
     {
-      "id": 12,
       "guid": "https://techcommunity.microsoft.com/t5/exchange-team-blog/message-trace-support-using-graph-api-is-now-in-public-preview/ba-p/4488587",
       "title": "Message Trace Support Using Graph API is now in Public Preview",
       "link": "https://techcommunity.microsoft.com/t5/exchange-team-blog/message-trace-support-using-graph-api-is-now-in-public-preview/ba-p/4488587",
@@ -53,7 +48,6 @@
       "category": "exchange-team-blog"
     },
     {
-      "id": 5,
       "guid": "https://techcommunity.microsoft.com/t5/microsoft-foundry-blog/building-an-ai-red-teaming-framework-a-developer-s-guide-to/ba-p/4488389",
       "title": "Building an AI Red Teaming Framework: A Developer's Guide to Securing AI Applications",
       "link": "https://techcommunity.microsoft.com/t5/microsoft-foundry-blog/building-an-ai-red-teaming-framework-a-developer-s-guide-to/ba-p/4488389",
@@ -63,7 +57,6 @@
       "category": "microsoft-foundry-blog"
     },
     {
-      "id": 6,
       "guid": "https://techcommunity.microsoft.com/t5/linux-and-open-source-blog/scaling-dns-on-aks-with-cilium-nodelocal-dnscache-lrp-and-fqdn/ba-p/4486323",
       "title": "Scaling DNS on AKS with Cilium: NodeLocal DNSCache, LRP, and FQDN Policies",
       "link": "https://techcommunity.microsoft.com/t5/linux-and-open-source-blog/scaling-dns-on-aks-with-cilium-nodelocal-dnscache-lrp-and-fqdn/ba-p/4486323",
@@ -73,7 +66,6 @@
       "category": "linux-and-open-source-blog"
     },
     {
-      "id": 7,
       "guid": "https://techcommunity.microsoft.com/t5/microsoft-365-insider-blog/microsoft-365-accessibility-a-year-in-review-building-accessible/ba-p/4476024",
       "title": "Microsoft 365 Accessibility, a year in review: Building accessible experiences with support from AI",
       "link": "https://techcommunity.microsoft.com/t5/microsoft-365-insider-blog/microsoft-365-accessibility-a-year-in-review-building-accessible/ba-p/4476024",
@@ -83,7 +75,6 @@
       "category": "microsoft-365-insider-blog"
     },
     {
-      "id": 8,
       "guid": "https://techcommunity.microsoft.com/t5/exchange-team-blog/exchange-online-public-folder-data-and-retention-questions/ba-p/4488872",
       "title": "Exchange Online Public Folder Data and Retention Questions",
       "link": "https://techcommunity.microsoft.com/t5/exchange-team-blog/exchange-online-public-folder-data-and-retention-questions/ba-p/4488872",
@@ -93,7 +84,6 @@
       "category": "exchange-team-blog"
     },
     {
-      "id": 9,
       "guid": "https://techcommunity.microsoft.com/t5/partner-news/ep-34-iamcp-illuminate-2026-india-where-trust-turns-into-real/ba-p/4487923",
       "title": "Ep 34 | IAMCP Illuminate 2026 (India): Where Trust Turns into Real Partner Opportunities",
       "link": "https://techcommunity.microsoft.com/t5/partner-news/ep-34-iamcp-illuminate-2026-india-where-trust-turns-into-real/ba-p/4487923",
@@ -103,7 +93,6 @@
       "category": "partner-news"
     },
     {
-      "id": 10,
       "guid": "https://techcommunity.microsoft.com/t5/azure-database-support-blog/handling-duplicate-metadata-errors-when-re-enabling-mirroring-in/ba-p/4487256",
       "title": "Handling Duplicate Metadata Errors When Re‑Enabling Mirroring in Azure SQL Database",
       "link": "https://techcommunity.microsoft.com/t5/azure-database-support-blog/handling-duplicate-metadata-errors-when-re-enabling-mirroring-in/ba-p/4487256",
@@ -113,7 +102,6 @@
       "category": "azure-database-support-blog"
     },
     {
-      "id": 15,
       "guid": "https://techcommunity.microsoft.com/t5/intune-customer-success/intune-my-macs-accelerating-macos-proof-of-concepts-with/ba-p/4488571",
       "title": "Intune my Macs: Accelerating macOS proof of concepts with Microsoft Intune",
       "link": "https://techcommunity.microsoft.com/t5/intune-customer-success/intune-my-macs-accelerating-macos-proof-of-concepts-with/ba-p/4488571",
@@ -123,7 +111,6 @@
       "category": "intune-customer-success"
     },
     {
-      "id": 11,
       "guid": "https://techcommunity.microsoft.com/t5/partner-news/partner-blog-new-partner-benefits-are-coming-plan-now-to/ba-p/4488593",
       "title": "Partner Blog | New partner benefits are coming: Plan now to maximize value.",
       "link": "https://techcommunity.microsoft.com/t5/partner-news/partner-blog-new-partner-benefits-are-coming-plan-now-to/ba-p/4488593",
@@ -133,7 +120,6 @@
       "category": "partner-news"
     },
     {
-      "id": 13,
       "guid": "https://techcommunity.microsoft.com/t5/marketplace-blog/scale-your-sales-growth-with-negotiated-deals-and-reselling-with/ba-p/4483509",
       "title": "Scale your sales growth with negotiated deals and reselling with ease",
       "link": "https://techcommunity.microsoft.com/t5/marketplace-blog/scale-your-sales-growth-with-negotiated-deals-and-reselling-with/ba-p/4483509",
@@ -143,7 +129,6 @@
       "category": "marketplace-blog"
     },
     {
-      "id": 14,
       "guid": "https://techcommunity.microsoft.com/t5/viva-glint-blog/news-to-know-volume-3-edition-1-january-2026/ba-p/4488547",
       "title": "News to Know – Volume 3, Edition 1, January 2026",
       "link": "https://techcommunity.microsoft.com/t5/viva-glint-blog/news-to-know-volume-3-edition-1-january-2026/ba-p/4488547",
@@ -153,7 +138,6 @@
       "category": "viva-glint-blog"
     },
     {
-      "id": 16,
       "guid": "https://techcommunity.microsoft.com/t5/azure-database-support-blog/set-up-a-linked-server-from-sql-managed-instance-to-azure/ba-p/4487783",
       "title": "Set up a linked server from SQL Managed Instance to Azure Synapse SQL",
       "link": "https://techcommunity.microsoft.com/t5/azure-database-support-blog/set-up-a-linked-server-from-sql-managed-instance-to-azure/ba-p/4487783",
@@ -163,7 +147,6 @@
       "category": "azure-database-support-blog"
     },
     {
-      "id": 17,
       "guid": "https://techcommunity.microsoft.com/t5/microsoft-teams-blog/licensing-updates-extend-access-to-advanced-capabilities-in/ba-p/4488312",
       "title": "Licensing updates extend access to advanced capabilities in Microsoft Teams and Microsoft Places",
       "link": "https://techcommunity.microsoft.com/t5/microsoft-teams-blog/licensing-updates-extend-access-to-advanced-capabilities-in/ba-p/4488312",
@@ -173,7 +156,6 @@
       "category": "microsoft-teams-blog"
     },
     {
-      "id": 18,
       "guid": "https://techcommunity.microsoft.com/t5/microsoft-sentinel-blog/accelerate-your-move-to-microsoft-sentinel-with-the-new-ai/ba-p/4488505",
       "title": "Accelerate your move to Microsoft Sentinel with the new AI Powered SIEM migration experience",
       "link": "https://techcommunity.microsoft.com/t5/microsoft-sentinel-blog/accelerate-your-move-to-microsoft-sentinel-with-the-new-ai/ba-p/4488505",
@@ -183,7 +165,6 @@
       "category": "microsoft-sentinel-blog"
     },
     {
-      "id": 19,
       "guid": "https://techcommunity.microsoft.com/t5/marketplace-blog/new-in-microsoft-marketplace-january-22-2026/ba-p/4469019",
       "title": "New in Microsoft Marketplace: January 22, 2026",
       "link": "https://techcommunity.microsoft.com/t5/marketplace-blog/new-in-microsoft-marketplace-january-22-2026/ba-p/4469019",
@@ -193,7 +174,6 @@
       "category": "marketplace-blog"
     },
     {
-      "id": 20,
       "guid": "https://techcommunity.microsoft.com/t5/azure-database-support-blog/quot-invalid-managed-identity-quot-error-in-vulnerability/ba-p/4487176",
       "title": "\"Invalid Managed Identity\" error in vulnerability assessments for SQL Managed Instance",
       "link": "https://techcommunity.microsoft.com/t5/azure-database-support-blog/quot-invalid-managed-identity-quot-error-in-vulnerability/ba-p/4487176",
