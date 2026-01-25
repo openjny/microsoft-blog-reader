@@ -1,0 +1,44 @@
+---
+import { type Article, stripHtml, formatDate, formatCategory } from "../lib/db";
+
+interface Props {
+  article: Article;
+}
+
+const { article } = Astro.props;
+const description = stripHtml(article.description);
+const truncatedDescription = description.length > 200 ? description.slice(0, 200) + "..." : description;
+---
+
+<article class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+  <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-2">
+    <time datetime={article.pub_date}>{formatDate(article.pub_date)}</time>
+    {article.author && (
+      <>
+        <span>•</span>
+        <span>{article.author}</span>
+      </>
+    )}
+    {article.category && (
+      <>
+        <span>•</span>
+        <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">
+          {formatCategory(article.category)}
+        </span>
+      </>
+    )}
+  </div>
+  <h2 class="text-xl font-semibold mb-2">
+    <a
+      href={article.link}
+      class="text-gray-900 hover:text-blue-600 transition-colors"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {article.title}
+    </a>
+  </h2>
+  {truncatedDescription && (
+    <p class="text-gray-600 text-sm leading-relaxed">{truncatedDescription}</p>
+  )}
+</article>

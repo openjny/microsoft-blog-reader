@@ -3,6 +3,16 @@
 __pycache__/
 *.pyc
 
+# Node.js
+node_modules/
+
+# Astro
+site/dist/
+site/.astro/
+
 # IDE
 .idea/
 .vscode/
+
+# Data (old JSON format)
+data/articles.json
