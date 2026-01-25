@@ -88,16 +88,18 @@ Export to `data/articles.json` as Hugo data file.
 
 ### 2.3 Description Processing
 
-- **SQLite**: Store complete body including HTML
-- **JSON Export**: Strip HTML tags, truncate to first 200 characters (for search index)
+- Strip HTML tags from the original RSS description
+- Store full text without truncation
 
 ```python
 import re
 
-def strip_html(html: str, max_length: int = 200) -> str:
-    """Remove HTML tags and truncate to specified length"""
+def strip_html(html: str) -> str:
+    """Remove HTML tags from text"""
     text = re.sub(r'<[^>]+>', '', html)
     text = re.sub(r'\s+', ' ', text).strip()
+    return text
+```
     if len(text) > max_length:
         text = text[:max_length] + '...'
     return text

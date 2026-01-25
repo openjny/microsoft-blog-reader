@@ -24,7 +24,6 @@ import feedparser
 RSS_URL = "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/Community?interaction.style=blog"
 MAX_RETRIES = 3
 RETRY_DELAY = 5  # seconds
-DESCRIPTION_MAX_LENGTH = 200
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
@@ -76,14 +75,12 @@ def parse_pub_date(entry: dict[str, Any]) -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def strip_html(html: str, max_length: int = DESCRIPTION_MAX_LENGTH) -> str:
-    """Remove HTML tags and truncate to specified length."""
+def strip_html(html: str) -> str:
+    """Remove HTML tags from text."""
     if not html:
         return ""
     text = re.sub(r"<[^>]+>", "", html)
     text = re.sub(r"\s+", " ", text).strip()
-    if len(text) > max_length:
-        text = text[:max_length] + "..."
     return text
 
 
