@@ -7,6 +7,7 @@ export const BLOG_METADATA: Record<string, { name: string; category: string }> =
   "analyticsonazure": { name: "Analytics on Azure", category: "Analytics" },
   "appsonazureblog": { name: "Apps on Azure", category: "PaaS" },
   "askds": { name: "Ask Directory Services", category: "Others" },
+  "azure-ai-foundry-blog": { name: "Microsoft Foundry", category: "AI" },
   "azure-ai-services-blog": { name: "Azure AI Services", category: "AI" },
   "azurearcblog": { name: "Azure Arc", category: "Arc" },
   "azurearchitectureblog": { name: "Azure Architecture", category: "Architecture" },
@@ -166,6 +167,8 @@ const SLUG_ALIASES: Record<string, string> = {
   "azuredatabasesupportblog": "azuredbsupport",
   // "exchange-team-blog" → "exchange"
   "exchangeteamblog": "exchange",
+  // "microsoft-foundry-blog" → "azure-ai-foundry-blog"
+  "microsoftfoundryblog": "azure-ai-foundry-blog",
   // Other known differences
   "healthcareandlifesciences": "healthcareandlifesciencesblog",
 };
