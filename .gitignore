@@ -14,5 +14,8 @@ site/.astro/
 .idea/
 .vscode/
 
+# Playwright CLI
+.playwright-cli/
+
 # Data (old JSON format)
 data/articles.json
