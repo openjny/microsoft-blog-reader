@@ -10,6 +10,22 @@
 - **Static site**: Astro reads SQLite directly via `better-sqlite3`
 - Only `feeds.db` is committed; HTML/RSS are generated on-demand
 
+## Code Quality
+
+**Before committing, always run `make check` to ensure code passes all linters and type checks.**
+
+| Tool | Language | Purpose | Command |
+|------|----------|---------|---------|
+| ruff | Python | Lint + Format | `make lint-python`, `make format-python` |
+| mypy | Python | Type check | `make typecheck-python` |
+| biome | TypeScript | Lint + Format | `make lint-ts`, `make format-ts` |
+| astro check | Astro/TS | Type check | `make typecheck-ts` |
+
+Quick commands:
+- `make check` - Run all linters and type checkers
+- `make lint-fix` - Auto-fix lint issues
+- `make format` - Format all code
+
 ## Python Environment
 
 - Use `uv` for local development
@@ -19,7 +35,7 @@
 ### Local Development (Python)
 
 ```bash
-uv sync                              # Install dependencies
+make install                         # Install all dependencies
 uv run python scripts/fetch_rss.py   # Fetch RSS and update SQLite
 ```
 
@@ -28,10 +44,8 @@ uv run python scripts/fetch_rss.py   # Fetch RSS and update SQLite
 ### Local Development
 
 ```bash
-cd site
-npm install                          # Install dependencies
-npm run dev                          # Start dev server
-npm run build                        # Build static site
+make dev                             # Start dev server
+make build                           # Build static site
 ```
 
 ### Build Output
