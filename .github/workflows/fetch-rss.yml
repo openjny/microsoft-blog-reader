@@ -1,0 +1,38 @@
+name: Fetch RSS
+
+on:
+    schedule:
+        # Run every 12 hours (UTC)
+        - cron: "0 */12 * * *"
+    workflow_dispatch:
+        # Enable manual trigger
+
+jobs:
+    fetch:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+                  cache: "pip"
+                  cache-dependency-path: requirements.txt
+
+            - name: Install dependencies
+              run: pip install -r requirements.txt
+
+            - name: Fetch RSS and update database
+              run: python scripts/fetch_rss.py
+
+            - name: Commit and push changes
+              uses: stefanzweifel/git-auto-commit-action@v5
+              with:
+                  commit_message: "chore: update articles data"
+                  file_pattern: "data/*"
+                  commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"

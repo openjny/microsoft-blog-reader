@@ -1,0 +1,11 @@
+[project]
+name = "microsoft-blog-reader"
+version = "0.1.0"
+description = "Fetch and aggregate Microsoft Tech Community blog RSS"
+requires-python = ">=3.12"
+dependencies = [
+    "feedparser>=6.0.0",
+]
+
+[tool.uv]
+dev-dependencies = []
