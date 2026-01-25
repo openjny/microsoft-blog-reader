@@ -194,7 +194,9 @@ def main() -> int:
         cursor.execute("SELECT COUNT(*) FROM articles")
         total_count = cursor.fetchone()[0]
 
-        logger.info(f"Process completed successfully. {new_count} new, {total_count} total articles.")
+        logger.info(
+            f"Process completed successfully. {new_count} new, {total_count} total articles."
+        )
         return 0
 
     except Exception as e:
