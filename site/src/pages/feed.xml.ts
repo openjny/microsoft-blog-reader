@@ -17,6 +17,6 @@ export function GET(context: APIContext) {
       author: article.author ?? undefined,
       categories: article.category ? [article.category] : undefined,
     })),
-    customData: `<language>en-us</language>`,
+    customData: "<language>en-us</language>",
   });
 }

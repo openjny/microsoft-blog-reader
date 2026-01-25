@@ -1,5 +1,5 @@
+import { join } from "node:path";
 import Database from "better-sqlite3";
-import { join } from "path";
 import { getBlogMetadata } from "./blogs";
 
 const DB_PATH = join(process.cwd(), "..", "data", "feeds.db");
@@ -19,7 +19,7 @@ function getDb() {
   return new Database(DB_PATH, { readonly: true });
 }
 
-export function getArticles(limit: number = 30): Article[] {
+export function getArticles(limit = 30): Article[] {
   const db = getDb();
   const stmt = db.prepare(`
     SELECT id, guid, title, link, description, pub_date, author, category

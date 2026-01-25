@@ -13,11 +13,11 @@ import re
 import sqlite3
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import feedparser
+import feedparser  # type: ignore[import-untyped]
 
 # Configuration
 RSS_URL = "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/Community?interaction.style=blog"
@@ -79,7 +79,7 @@ def parse_pub_date(entry: dict[str, Any]) -> str:
             entry.published_parsed.tm_hour,
             entry.published_parsed.tm_min,
             entry.published_parsed.tm_sec,
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
         return dt.isoformat()
     if hasattr(entry, "updated_parsed") and entry.updated_parsed:
@@ -90,11 +90,11 @@ def parse_pub_date(entry: dict[str, Any]) -> str:
             entry.updated_parsed.tm_hour,
             entry.updated_parsed.tm_min,
             entry.updated_parsed.tm_sec,
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
         return dt.isoformat()
     # Fallback to current time
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def fetch_rss_with_retry() -> feedparser.FeedParserDict:
@@ -145,17 +145,23 @@ def upsert_articles(conn: sqlite3.Connection, feed: feedparser.FeedParserDict) -
 
         if existing:
             # Update existing article
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE articles
                 SET title = ?, description = ?, updated_at = datetime('now')
                 WHERE guid = ?
-            """, (title, description, guid))
+            """,
+                (title, description, guid),
+            )
         else:
             # Insert new article
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO articles (guid, title, link, description, pub_date, author, category)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (guid, title, link, description, pub_date, author, category))
+            """,
+                (guid, title, link, description, pub_date, author, category),
+            )
             new_count += 1
 
     conn.commit()
@@ -182,7 +188,9 @@ def main() -> int:
         cursor.execute("SELECT COUNT(*) FROM articles")
         total_count = cursor.fetchone()[0]
 
-        logger.info(f"Process completed successfully. {new_count} new, {total_count} total articles.")
+        logger.info(
+            f"Process completed successfully. {new_count} new, {total_count} total articles."
+        )
         return 0
 
     except Exception as e:
