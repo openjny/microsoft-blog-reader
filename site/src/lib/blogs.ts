@@ -460,8 +460,14 @@ const BLOG_URL_MAP: Record<string, { blogSlug: string; urlCategory: string }> =
       blogSlug: "microsoftteamsblog",
       urlCategory: "microsoftteams",
     },
-    "partner-news": { blogSlug: "partnernews", urlCategory: "partnercommunity" },
-    "viva-glint-blog": { blogSlug: "viva_glint_blog", urlCategory: "viva-glint" },
+    "partner-news": {
+      blogSlug: "partnernews",
+      urlCategory: "partnercommunity",
+    },
+    "viva-glint-blog": {
+      blogSlug: "viva_glint_blog",
+      urlCategory: "viva-glint",
+    },
   };
 
 /**
