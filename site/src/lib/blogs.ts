@@ -414,3 +414,68 @@ export function getBlogMetadata(
 
   return undefined;
 }
+
+/**
+ * Mapping from RSS category slug (e.g., "apps-on-azure-blog") to blog page URL info.
+ * Key: RSS category slug (as stored in DB), Value: { blogSlug, urlCategory }
+ */
+const BLOG_URL_MAP: Record<string, { blogSlug: string; urlCategory: string }> =
+  {
+    "apps-on-azure-blog": { blogSlug: "appsonazureblog", urlCategory: "azure" },
+    "azure-database-support-blog": {
+      blogSlug: "azuredbsupport",
+      urlCategory: "azuredatabases",
+    },
+    "exchange-team-blog": { blogSlug: "exchange", urlCategory: "exchange" },
+    "healthcare-and-life-sciences": {
+      blogSlug: "healthcareandlifesciencesblog",
+      urlCategory: "healthcareandlifesciences",
+    },
+    "ilt-communications-blog": {
+      blogSlug: "iltcommunicationblog",
+      urlCategory: "mcpp",
+    },
+    "intune-customer-success": {
+      blogSlug: "intunecustomersuccess",
+      urlCategory: "microsoftintune",
+    },
+    "linux-and-open-source-blog": {
+      blogSlug: "linuxandopensourceblog",
+      urlCategory: "azure",
+    },
+    "marketplace-blog": { blogSlug: "marketplace-blog", urlCategory: "mcpp" },
+    "microsoft-365-insider-blog": {
+      blogSlug: "microsoft365insiderblog",
+      urlCategory: "microsoft365",
+    },
+    "microsoft-foundry-blog": {
+      blogSlug: "azure-ai-foundry-blog",
+      urlCategory: "azure-ai-foundry",
+    },
+    "microsoft-sentinel-blog": {
+      blogSlug: "microsoftsentinelblog",
+      urlCategory: "microsoft-sentinel",
+    },
+    "microsoft-teams-blog": {
+      blogSlug: "microsoftteamsblog",
+      urlCategory: "microsoftteams",
+    },
+    "partner-news": { blogSlug: "partnernews", urlCategory: "partnercommunity" },
+    "viva-glint-blog": { blogSlug: "viva_glint_blog", urlCategory: "viva-glint" },
+  };
+
+/**
+ * Get the blog page URL for a given RSS category slug.
+ * Returns the full URL to the blog's main page on Tech Community.
+ * Returns undefined if the category is not mapped.
+ */
+export function getBlogUrl(categorySlug: string | null): string | undefined {
+  if (!categorySlug) return undefined;
+
+  const mapping = BLOG_URL_MAP[categorySlug];
+  if (mapping) {
+    return `https://techcommunity.microsoft.com/category/${mapping.urlCategory}/blog/${mapping.blogSlug}`;
+  }
+
+  return undefined;
+}

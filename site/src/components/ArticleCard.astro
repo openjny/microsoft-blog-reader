@@ -1,5 +1,6 @@
 ---
 import { type Article, stripHtml, formatDate, formatCategory } from "../lib/db";
+import { getBlogUrl } from "../lib/blogs";
 
 interface Props {
   article: Article;
@@ -8,6 +9,7 @@ interface Props {
 const { article } = Astro.props;
 const description = stripHtml(article.description);
 const truncatedDescription = description.length > 200 ? description.slice(0, 200) + "..." : description;
+const blogUrl = getBlogUrl(article.category);
 ---
 
 <article class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
@@ -22,9 +24,20 @@ const truncatedDescription = description.length > 200 ? description.slice(0, 200
     {article.category && (
       <>
         <span>•</span>
-        <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">
-          {formatCategory(article.category)}
-        </span>
+        {blogUrl ? (
+          <a
+            href={blogUrl}
+            class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium hover:bg-blue-200 transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {formatCategory(article.category)}
+          </a>
+        ) : (
+          <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">
+            {formatCategory(article.category)}
+          </span>
+        )}
       </>
     )}
   </div>

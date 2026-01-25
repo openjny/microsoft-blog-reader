@@ -1,19 +1,238 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import ArticleCard from "../components/ArticleCard.astro";
-import { getArticles, getTotalCount } from "../lib/db";
+import { getAllArticles, getTotalCount, stripHtml, formatDate, formatCategory } from "../lib/db";
+import { getBlogMetadata, getBlogUrl, BLOG_METADATA } from "../lib/blogs";
 
-const articles = getArticles(30);
+const articles = getAllArticles();
 const totalCount = getTotalCount();
+
+// Build meta-category list from BLOG_METADATA
+const metaCategorySet = new Set<string>();
+for (const [, meta] of Object.entries(BLOG_METADATA)) {
+  metaCategorySet.add(meta.category);
+}
+const metaCategories = Array.from(metaCategorySet).sort();
+
+// Prepare article data for client-side filtering
+const articlesData = articles.map((a) => {
+  const meta = a.category ? getBlogMetadata(a.category) : undefined;
+  return {
+    id: a.id,
+    title: a.title,
+    link: a.link,
+    description: stripHtml(a.description),
+    pubDate: a.pub_date,
+    pubDateFormatted: formatDate(a.pub_date),
+    author: a.author,
+    category: a.category,
+    categoryFormatted: formatCategory(a.category),
+    metaCategory: meta?.category || null,
+    blogUrl: getBlogUrl(a.category) || null,
+  };
+});
 ---
 
 <Layout title="Microsoft Blog Reader">
-  <div class="mb-6">
-    <p class="text-gray-600">
-      Showing latest {articles.length} of {totalCount} articles
+  <!-- Search and Filter Controls -->
+  <div class="mb-6 space-y-4">
+    <div class="flex flex-col sm:flex-row gap-4">
+      <div class="flex-1">
+        <label for="search-input" class="sr-only">Search articles</label>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search by title, description, or author..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+      <div class="sm:w-48">
+        <label for="category-select" class="sr-only">Filter by category</label>
+        <select
+          id="category-select"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+        >
+          <option value="">All Categories</option>
+          {metaCategories.map((cat) => (
+            <option value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+    <p id="result-count" class="text-gray-600">
+      Showing latest {Math.min(30, articles.length)} of {totalCount} articles
     </p>
   </div>
-  <div class="space-y-4">
-    {articles.map((article) => <ArticleCard article={article} />)}
+
+  <!-- Article List -->
+  <div id="article-list" class="space-y-4">
+    {articles.slice(0, 30).map((article) => <ArticleCard article={article} />)}
+  </div>
+
+  <!-- Load More Button -->
+  <div id="load-more-container" class="mt-6 text-center hidden">
+    <button
+      id="load-more-btn"
+      class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+    >
+      Load More
+    </button>
+  </div>
+
+  <!-- No Results Message -->
+  <div id="no-results" class="hidden text-center py-12 text-gray-500">
+    <p class="text-lg">No articles found matching your criteria.</p>
+    <p class="text-sm mt-2">Try adjusting your search or filter.</p>
   </div>
 </Layout>
+
+<script define:vars={{ articlesData }}>
+  const ITEMS_PER_PAGE = 30;
+  let displayCount = ITEMS_PER_PAGE;
+
+  const searchInput = document.getElementById('search-input');
+  const categorySelect = document.getElementById('category-select');
+  const articleList = document.getElementById('article-list');
+  const resultCount = document.getElementById('result-count');
+  const noResults = document.getElementById('no-results');
+  const loadMoreContainer = document.getElementById('load-more-container');
+  const loadMoreBtn = document.getElementById('load-more-btn');
+
+  // Initialize from URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q') || '';
+  const initialCategory = urlParams.get('category') || '';
+
+  searchInput.value = initialQuery;
+  categorySelect.value = initialCategory;
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;');
+  }
+
+  function renderArticle(article) {
+    const truncatedDesc = article.description.length > 200 
+      ? article.description.slice(0, 200) + '...' 
+      : article.description;
+
+    const authorHtml = article.author 
+      ? `<span>•</span><span>${escapeHtml(article.author)}</span>` 
+      : '';
+
+    const categoryHtml = article.categoryFormatted 
+      ? article.blogUrl
+        ? `<span>•</span><a href="${escapeHtml(article.blogUrl)}" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium hover:bg-blue-200 transition-colors" target="_blank" rel="noopener noreferrer">${escapeHtml(article.categoryFormatted)}</a>`
+        : `<span>•</span><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">${escapeHtml(article.categoryFormatted)}</span>`
+      : '';
+
+    const descHtml = truncatedDesc 
+      ? `<p class="text-gray-600 text-sm leading-relaxed">${escapeHtml(truncatedDesc)}</p>` 
+      : '';
+
+    return `
+      <article class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-article-id="${article.id}">
+        <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-2">
+          <time datetime="${article.pubDate}">${article.pubDateFormatted}</time>
+          ${authorHtml}
+          ${categoryHtml}
+        </div>
+        <h2 class="text-xl font-semibold mb-2">
+          <a href="${escapeHtml(article.link)}" class="text-gray-900 hover:text-blue-600 transition-colors" target="_blank" rel="noopener noreferrer">
+            ${escapeHtml(article.title)}
+          </a>
+        </h2>
+        ${descHtml}
+      </article>
+    `;
+  }
+
+  function filterArticles() {
+    const query = searchInput.value.toLowerCase().trim();
+    const category = categorySelect.value;
+
+    let filtered = articlesData;
+
+    // Filter by search query (AND search for multiple keywords)
+    if (query) {
+      const keywords = query.split(/\s+/).filter(k => k.length > 0);
+      filtered = filtered.filter(a => {
+        const searchText = `${a.title} ${a.description}`.toLowerCase();
+        return keywords.every(keyword => searchText.includes(keyword));
+      });
+    }
+
+    // Filter by meta-category
+    if (category) {
+      filtered = filtered.filter(a => a.metaCategory === category);
+    }
+
+    return filtered;
+  }
+
+  function updateDisplay() {
+    const filtered = filterArticles();
+    const toShow = filtered.slice(0, displayCount);
+
+    // Update URL params
+    const params = new URLSearchParams();
+    if (searchInput.value) params.set('q', searchInput.value);
+    if (categorySelect.value) params.set('category', categorySelect.value);
+    const newUrl = params.toString() 
+      ? `${window.location.pathname}?${params.toString()}`
+      : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+
+    // Render articles
+    if (toShow.length === 0) {
+      articleList.classList.add('hidden');
+      noResults.classList.remove('hidden');
+      loadMoreContainer.classList.add('hidden');
+    } else {
+      articleList.innerHTML = toShow.map(renderArticle).join('');
+      articleList.classList.remove('hidden');
+      noResults.classList.add('hidden');
+
+      // Show/hide load more button
+      if (filtered.length > displayCount) {
+        loadMoreContainer.classList.remove('hidden');
+      } else {
+        loadMoreContainer.classList.add('hidden');
+      }
+    }
+
+    // Update result count
+    const total = articlesData.length;
+    if (searchInput.value || categorySelect.value) {
+      resultCount.textContent = `Found ${filtered.length} articles (${total} total)`;
+    } else {
+      resultCount.textContent = `Showing latest ${Math.min(displayCount, filtered.length)} of ${total} articles`;
+    }
+  }
+
+  // Debounce for search input
+  let debounceTimer;
+  searchInput.addEventListener('input', () => {
+    displayCount = ITEMS_PER_PAGE; // Reset on new search
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(updateDisplay, 300);
+  });
+
+  categorySelect.addEventListener('change', () => {
+    displayCount = ITEMS_PER_PAGE; // Reset on filter change
+    updateDisplay();
+  });
+
+  loadMoreBtn.addEventListener('click', () => {
+    displayCount += ITEMS_PER_PAGE;
+    updateDisplay();
+  });
+
+  // Initial render if URL has params
+  if (initialQuery || initialCategory) {
+    updateDisplay();
+  }
+</script>
