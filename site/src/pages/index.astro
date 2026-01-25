@@ -184,6 +184,18 @@ const articlesData = articles.map((a) => {
   searchInput.value = initialQuery;
   categorySelect.value = initialCategory;
 
+  // Normalize category ID for comparison (remove hyphens, underscores, lowercase)
+  function normalizeCategory(s) {
+    if (!s) return '';
+    return s.toLowerCase().replace(/[-_]/g, '').replace(/blog$/, '');
+  }
+
+  // Build normalized lookup map for CATEGORY_GROUPS
+  const normalizedCategoryMap = {};
+  for (const [group, blogIds] of Object.entries(CATEGORY_GROUPS)) {
+    normalizedCategoryMap[group] = blogIds.map(id => normalizeCategory(id));
+  }
+
   function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, '&amp;')
@@ -243,10 +255,13 @@ const articlesData = articles.map((a) => {
       });
     }
 
-    // Filter by category group (using blog_id)
+    // Filter by category group (using normalized blog_id)
     if (category) {
-      const blogIds = CATEGORY_GROUPS[category] || [];
-      filtered = filtered.filter(a => blogIds.includes(a.category));
+      const normalizedIds = normalizedCategoryMap[category] || [];
+      filtered = filtered.filter(a => {
+        const normalizedArticleCategory = normalizeCategory(a.category);
+        return normalizedIds.includes(normalizedArticleCategory);
+      });
     }
 
     return filtered;
