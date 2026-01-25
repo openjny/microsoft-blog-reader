@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import { join } from "path";
+import { getBlogMetadata } from "./blogs";
 
 const DB_PATH = join(process.cwd(), "..", "data", "feeds.db");
 
@@ -93,6 +94,14 @@ export function formatDate(isoDate: string): string {
 
 export function formatCategory(slug: string | null): string {
   if (!slug) return "";
+
+  // Try to get official name from metadata
+  const metadata = getBlogMetadata(slug);
+  if (metadata) {
+    return metadata.name;
+  }
+
+  // Fallback: convert slug to title case
   return slug
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
