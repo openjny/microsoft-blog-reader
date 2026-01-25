@@ -1,4 +1,4 @@
-# Azure Blog Reader - Specification
+# Microsoft Blog Reader - Specification
 
 A system that periodically fetches Microsoft Tech Community blog RSS, stores articles in a database, and provides a static site with Web UI and extended RSS feed.
 

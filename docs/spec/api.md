@@ -60,12 +60,12 @@ Static pages hosted on GitHub Pages.
      xmlns:dc="http://purl.org/dc/elements/1.1/"
      xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Azure Blog Reader</title>
-    <link>https://{username}.github.io/azure-blog-reader/</link>
+    <title>Microsoft Blog Reader</title>
+    <link>https://{username}.github.io/microsoft-blog-reader/</link>
     <description>Aggregated feed of Microsoft Tech Community blogs</description>
     <language>en-us</language>
     <lastBuildDate>Sun, 26 Jan 2026 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://{username}.github.io/azure-blog-reader/feed.xml"
+    <atom:link href="https://{username}.github.io/microsoft-blog-reader/feed.xml"
                rel="self" type="application/rss+xml"/>
 
     <item>

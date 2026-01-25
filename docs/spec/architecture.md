@@ -120,7 +120,7 @@ flowchart TD
 ## 4. Directory Structure
 
 ```
-azure-blog-reader/
+microsoft-blog-reader/
 ├── .github/
 │   └── workflows/
 │       ├── fetch-rss.yml        # RSS fetch workflow
