@@ -1,8 +1,19 @@
 # Data Model
 
-## 1. SQLite Schema
+## 1. Overview
 
-### 1.1 articles Table
+SQLite is the single source of truth for article data. Astro reads SQLite directly at build time.
+
+```
+SQLite (feeds.db)     ──►    Astro (better-sqlite3)    ──►    Static HTML/RSS
+   │                              │
+   │ Committed                    │ Build-time read
+   │ Updated by fetch_rss.py      │ No intermediate files
+```
+
+## 2. SQLite Schema
+
+### 2.1 articles Table
 
 Main table storing article information.
 
@@ -12,7 +23,7 @@ CREATE TABLE IF NOT EXISTS articles (
     guid TEXT UNIQUE NOT NULL,           -- Unique article identifier (RSS guid)
     title TEXT NOT NULL,                 -- Article title
     link TEXT NOT NULL,                  -- Article URL
-    description TEXT,                    -- Article body (HTML)
+    description TEXT,                    -- Article body (raw HTML from RSS)
     pub_date TEXT NOT NULL,              -- Publication date (ISO 8601 format)
     author TEXT,                         -- Author (dc:creator)
     category TEXT,                       -- Category (extracted from URL)
@@ -25,22 +36,22 @@ CREATE INDEX IF NOT EXISTS idx_articles_pub_date ON articles(pub_date DESC);
 CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category);
 ```
 
-### 1.2 Column Details
+### 2.2 Column Details
 
-| Column      | Type    | Nullable | Description                     | Example                                                |
-| ----------- | ------- | -------- | ------------------------------- | ------------------------------------------------------ |
-| id          | INTEGER | NO       | Auto-increment ID               | 1, 2, 3...                                             |
-| guid        | TEXT    | NO       | Unique article identifier       | `https://techcommunity.microsoft.com/.../ba-p/4488917` |
-| title       | TEXT    | NO       | Article title                   | "Supercharging SharePoint Metadata..."                 |
-| link        | TEXT    | NO       | Article URL                     | `https://techcommunity.microsoft.com/.../ba-p/4488917` |
-| description | TEXT    | YES      | Article body (may contain HTML) | `<P>Organizations adopting...</P>`                     |
-| pub_date    | TEXT    | NO       | Publication date (ISO 8601)     | `2026-01-24T00:10:05Z`                                 |
-| author      | TEXT    | YES      | Author name (username)          | `NicholasAquino`                                       |
-| category    | TEXT    | YES      | Category (URL-extracted)        | `healthcare-and-life-sciences`                         |
-| created_at  | TEXT    | NO       | Record creation timestamp       | `2026-01-25T12:00:00`                                  |
-| updated_at  | TEXT    | NO       | Record update timestamp         | `2026-01-25T12:00:00`                                  |
+| Column      | Type    | Nullable | Description                 | Example                                                |
+| ----------- | ------- | -------- | --------------------------- | ------------------------------------------------------ |
+| id          | INTEGER | NO       | Auto-increment ID           | 1, 2, 3...                                             |
+| guid        | TEXT    | NO       | Unique article identifier   | `https://techcommunity.microsoft.com/.../ba-p/4488917` |
+| title       | TEXT    | NO       | Article title               | "Supercharging SharePoint Metadata..."                 |
+| link        | TEXT    | NO       | Article URL                 | `https://techcommunity.microsoft.com/.../ba-p/4488917` |
+| description | TEXT    | YES      | Article body (raw HTML)     | `<P>Organizations adopting...</P>`                     |
+| pub_date    | TEXT    | NO       | Publication date (ISO 8601) | `2026-01-24T00:10:05Z`                                 |
+| author      | TEXT    | YES      | Author name (username)      | `NicholasAquino`                                       |
+| category    | TEXT    | YES      | Category (URL-extracted)    | `healthcare-and-life-sciences`                         |
+| created_at  | TEXT    | NO       | Record creation timestamp   | `2026-01-25T12:00:00`                                  |
+| updated_at  | TEXT    | NO       | Record update timestamp     | `2026-01-25T12:00:00`                                  |
 
-### 1.3 UPSERT Logic
+### 2.3 UPSERT Logic
 
 To prevent duplicate articles, execute UPSERT using `guid` as the key.
 
@@ -53,69 +64,92 @@ ON CONFLICT(guid) DO UPDATE SET
     updated_at = datetime('now');
 ```
 
-## 2. JSON Export Format
+## 3. Data Access Pattern (Astro)
 
-Export to `data/articles.json` as Hugo data file.
+Astro reads SQLite directly at build time using `better-sqlite3`. No intermediate JSON file is needed.
 
-### 2.1 Structure
+### 3.1 Database Helper (TypeScript)
 
-```json
-{
-  "generated_at": "2026-01-25T12:00:00Z",
-  "total_count": 150,
-  "articles": [
-    {
-      "id": 150,
-      "guid": "https://techcommunity.microsoft.com/.../ba-p/4488917",
-      "title": "Supercharging SharePoint Metadata...",
-      "link": "https://techcommunity.microsoft.com/.../ba-p/4488917",
-      "description": "Organizations adopting Microsoft 365 Copilot...",
-      "pub_date": "2026-01-24T00:10:05Z",
-      "author": "NicholasAquino",
-      "category": "healthcare-and-life-sciences"
-    }
-  ]
+```typescript
+// site/src/lib/db.ts
+import Database from "better-sqlite3";
+import { join } from "path";
+
+const DB_PATH = join(process.cwd(), "..", "data", "feeds.db");
+
+export interface Article {
+  id: number;
+  guid: string;
+  title: string;
+  link: string;
+  description: string | null;
+  pub_date: string;
+  author: string | null;
+  category: string | null;
+}
+
+export function getArticles(limit: number = 30): Article[] {
+  const db = new Database(DB_PATH, { readonly: true });
+  const stmt = db.prepare(`
+    SELECT id, guid, title, link, description, pub_date, author, category
+    FROM articles
+    ORDER BY pub_date DESC
+    LIMIT ?
+  `);
+  const articles = stmt.all(limit) as Article[];
+  db.close();
+  return articles;
+}
+
+export function getArticlesByCategory(category: string): Article[] {
+  const db = new Database(DB_PATH, { readonly: true });
+  const stmt = db.prepare(`
+    SELECT id, guid, title, link, description, pub_date, author, category
+    FROM articles
+    WHERE category = ?
+    ORDER BY pub_date DESC
+  `);
+  const articles = stmt.all(category) as Article[];
+  db.close();
+  return articles;
+}
+
+export function getAllCategories(): string[] {
+  const db = new Database(DB_PATH, { readonly: true });
+  const stmt = db.prepare(`
+    SELECT DISTINCT category FROM articles WHERE category IS NOT NULL
+  `);
+  const rows = stmt.all() as { category: string }[];
+  db.close();
+  return rows.map((r) => r.category);
 }
 ```
 
-### 2.2 Field Description
+### 3.2 Description Processing
 
-| Field        | Type   | Description                             |
-| ------------ | ------ | --------------------------------------- |
-| generated_at | string | JSON generation timestamp (ISO 8601)    |
-| total_count  | number | Total article count                     |
-| articles     | array  | Array of article objects (newest first) |
+When displaying, HTML tags should be stripped:
 
-### 2.3 Description Processing
-
-- Strip HTML tags from the original RSS description
-- Store full text without truncation
-
-```python
-import re
-
-def strip_html(html: str) -> str:
-    """Remove HTML tags from text"""
-    text = re.sub(r'<[^>]+>', '', html)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
-```
-    if len(text) > max_length:
-        text = text[:max_length] + '...'
-    return text
+```typescript
+export function stripHtml(html: string | null): string {
+  if (!html) return "";
+  return html
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 ```
 
-## 3. Category Extraction Logic
+## 4. Category Extraction Logic
 
 Since the RSS feed lacks category tags, extract from URL path.
 
-### 3.1 URL Structure
+### 4.1 URL Structure
 
 ```
 https://techcommunity.microsoft.com/t5/{category-name}/{article-slug}/ba-p/{article-id}
 ```
 
-### 3.2 Extraction Regex
+### 4.2 Extraction Regex
 
 ```python
 import re
@@ -128,7 +162,7 @@ def extract_category(url: str) -> str | None:
     return None
 ```
 
-### 3.3 Category Examples
+### 4.3 Category Examples
 
 | Category Slug                  | Display Name (Inferred)      |
 | ------------------------------ | ---------------------------- |
@@ -138,20 +172,20 @@ def extract_category(url: str) -> str | None:
 | `exchange-team-blog`           | Exchange Team Blog           |
 | `microsoft-365-blog`           | Microsoft 365 Blog           |
 
-## 4. Search Index
+## 5. Search Index (Generated)
 
-Generate search index for Lunr.js at build time.
+Generate search index for Lunr.js at Hugo build time.
 
-### 4.1 Indexed Fields
+### 5.1 Indexed Fields
 
-| Field       | Boost | Description      |
-| ----------- | ----- | ---------------- |
-| title       | 10    | Article title    |
-| category    | 5     | Category         |
-| author      | 3     | Author name      |
-| description | 1     | Body (truncated) |
+| Field       | Boost | Description   |
+| ----------- | ----- | ------------- |
+| title       | 10    | Article title |
+| category    | 5     | Category      |
+| author      | 3     | Author name   |
+| description | 1     | Body text     |
 
-### 4.2 Index Structure (search-index.json)
+### 5.2 Index Structure (search-index.json)
 
 ```json
 {
