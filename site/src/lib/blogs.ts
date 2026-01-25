@@ -11,6 +11,39 @@
 
 export type Group = "Azure" | "Microsoft 365" | "Security" | "Others";
 
+/**
+ * Color scheme for each group (Tailwind classes).
+ */
+export const GROUP_COLORS: Record<
+  Group,
+  { bg: string; text: string; hover: string; border: string }
+> = {
+  Azure: {
+    bg: "bg-blue-100",
+    text: "text-blue-800",
+    hover: "hover:bg-blue-200",
+    border: "border-blue-200",
+  },
+  "Microsoft 365": {
+    bg: "bg-emerald-100",
+    text: "text-emerald-800",
+    hover: "hover:bg-emerald-200",
+    border: "border-emerald-200",
+  },
+  Security: {
+    bg: "bg-amber-100",
+    text: "text-amber-800",
+    hover: "hover:bg-amber-200",
+    border: "border-amber-200",
+  },
+  Others: {
+    bg: "bg-gray-100",
+    text: "text-gray-700",
+    hover: "hover:bg-gray-200",
+    border: "border-gray-200",
+  },
+};
+
 export interface BoardMetadata {
   displayName: string;
   category: string;

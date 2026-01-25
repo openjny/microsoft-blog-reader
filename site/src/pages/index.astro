@@ -2,13 +2,14 @@
 import Layout from "../layouts/Layout.astro";
 import ArticleCard from "../components/ArticleCard.astro";
 import { getAllArticles, getTotalCount, stripHtml, formatDate, formatBoard } from "../lib/db";
-import { getBlogUrl, GROUPS, BOARDS, ALIASES } from "../lib/blogs";
+import { getBlogUrl, GROUPS, BOARDS, ALIASES, GROUP_COLORS, getBoardGroup } from "../lib/blogs";
 
 const articles = getAllArticles();
 const totalCount = getTotalCount();
 
 // Prepare article data for client-side filtering
 const articlesData = articles.map((a) => {
+  const group = a.board ? getBoardGroup(a.board) : "Others";
   return {
     id: a.id,
     title: a.title,
@@ -20,6 +21,8 @@ const articlesData = articles.map((a) => {
     board: a.board,
     boardFormatted: formatBoard(a.board),
     blogUrl: getBlogUrl(a.board) || null,
+    group: group,
+    colors: GROUP_COLORS[group],
   };
 });
 
@@ -35,32 +38,66 @@ for (const group of GROUPS) {
 <Layout title="Microsoft Blog Reader">
   <!-- Search and Filter Controls -->
   <div class="mb-6 space-y-4">
-    <div class="flex flex-col sm:flex-row gap-4">
-      <div class="flex-1">
+    <div class="flex flex-col sm:flex-row gap-3">
+      <!-- Search Input with Icon -->
+      <div class="flex-1 relative">
         <label for="search-input" class="sr-only">Search articles</label>
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
         <input
           type="text"
           id="search-input"
-          placeholder="Search by title or description..."
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Search articles..."
+          class="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
         />
-      </div>
-      <div class="sm:w-48">
-        <label for="group-select" class="sr-only">Filter by group</label>
-        <select
-          id="group-select"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+        <button
+          id="clear-search"
+          type="button"
+          class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 hidden"
+          aria-label="Clear search"
         >
-          <option value="">All Groups</option>
-          {GROUPS.map((group) => (
-            <option value={group}>{group}</option>
-          ))}
-        </select>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <!-- Group Filter Buttons -->
+      <div class="flex flex-wrap gap-2" id="group-filters">
+        <button
+          data-group=""
+          class="group-btn px-3 py-2 text-sm font-medium rounded-lg border transition-colors bg-blue-600 text-white border-blue-600"
+        >
+          All
+        </button>
+        {GROUPS.map((group) => {
+          const colors = GROUP_COLORS[group];
+          return (
+            <button
+              data-group={group}
+              data-colors={JSON.stringify(colors)}
+              class={`group-btn px-3 py-2 text-sm font-medium rounded-lg border transition-colors bg-white text-gray-700 border-gray-300 hover:bg-gray-50`}
+            >
+              {group}
+            </button>
+          );
+        })}
       </div>
     </div>
-    <p id="result-count" class="text-gray-600">
-      Showing latest {Math.min(30, articles.length)} of {totalCount} articles
-    </p>
+    <!-- Result Count -->
+    <div class="flex items-center justify-between">
+      <p id="result-count" class="text-gray-600 text-sm">
+        Showing latest {Math.min(30, articles.length)} of {totalCount} articles
+      </p>
+      <button
+        id="clear-filters"
+        class="text-sm text-blue-600 hover:text-blue-800 hidden"
+      >
+        Clear filters
+      </button>
+    </div>
   </div>
 
   <!-- Article List -->
@@ -88,9 +125,12 @@ for (const group of GROUPS) {
 <script define:vars={{ articlesData, groupBoardIds, ALIASES }}>
   const ITEMS_PER_PAGE = 30;
   let displayCount = ITEMS_PER_PAGE;
+  let selectedGroup = '';
 
   const searchInput = document.getElementById('search-input');
-  const groupSelect = document.getElementById('group-select');
+  const clearSearchBtn = document.getElementById('clear-search');
+  const groupButtons = document.querySelectorAll('.group-btn');
+  const clearFiltersBtn = document.getElementById('clear-filters');
   const articleList = document.getElementById('article-list');
   const resultCount = document.getElementById('result-count');
   const noResults = document.getElementById('no-results');
@@ -103,7 +143,8 @@ for (const group of GROUPS) {
   const initialGroup = urlParams.get('group') || '';
 
   searchInput.value = initialQuery;
-  groupSelect.value = initialGroup;
+  selectedGroup = initialGroup;
+  updateGroupButtonStyles();
 
   /**
    * Normalize a board name to canonical form.
@@ -137,13 +178,13 @@ for (const group of GROUPS) {
       : article.description;
 
     const authorHtml = article.author 
-      ? `<span>•</span><span>${escapeHtml(article.author)}</span>` 
+      ? `<span class="inline-flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg><span>${escapeHtml(article.author)}</span></span>` 
       : '';
 
-    const boardHtml = article.boardFormatted 
+    const boardHtml = article.boardFormatted && article.colors
       ? article.blogUrl
-        ? `<span>•</span><a href="${escapeHtml(article.blogUrl)}" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium hover:bg-blue-200 transition-colors" target="_blank" rel="noopener noreferrer">${escapeHtml(article.boardFormatted)}</a>`
-        : `<span>•</span><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">${escapeHtml(article.boardFormatted)}</span>`
+        ? `<a href="${escapeHtml(article.blogUrl)}" class="${article.colors.bg} ${article.colors.text} ${article.colors.hover} px-2 py-0.5 rounded text-xs font-medium transition-colors" target="_blank" rel="noopener noreferrer">${escapeHtml(article.boardFormatted)}</a>`
+        : `<span class="${article.colors.bg} ${article.colors.text} px-2 py-0.5 rounded text-xs font-medium">${escapeHtml(article.boardFormatted)}</span>`
       : '';
 
     const descHtml = truncatedDesc 
@@ -151,25 +192,57 @@ for (const group of GROUPS) {
       : '';
 
     return `
-      <article class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-article-id="${article.id}">
-        <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-2">
-          <time datetime="${article.pubDate}">${article.pubDateFormatted}</time>
-          ${authorHtml}
-          ${boardHtml}
-        </div>
-        <h2 class="text-xl font-semibold mb-2">
+      <article class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow" data-article-id="${article.id}">
+        <h2 class="text-lg font-semibold mb-3 leading-snug">
           <a href="${escapeHtml(article.link)}" class="text-gray-900 hover:text-blue-600 transition-colors" target="_blank" rel="noopener noreferrer">
             ${escapeHtml(article.title)}
           </a>
         </h2>
-        ${descHtml}
+        ${descHtml ? `<p class="text-gray-600 text-sm leading-relaxed mb-3">${escapeHtml(article.description.length > 200 ? article.description.slice(0, 200) + '...' : article.description)}</p>` : ''}
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
+          <span class="inline-flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <time datetime="${article.pubDate}">${article.pubDateFormatted}</time>
+          </span>
+          ${authorHtml}
+          ${boardHtml}
+        </div>
       </article>
     `;
   }
 
+  function updateGroupButtonStyles() {
+    groupButtons.forEach(btn => {
+      const group = btn.dataset.group;
+      if (group === selectedGroup) {
+        btn.classList.remove('bg-white', 'text-gray-700', 'border-gray-300', 'hover:bg-gray-50');
+        btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+      } else {
+        btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+        btn.classList.add('bg-white', 'text-gray-700', 'border-gray-300', 'hover:bg-gray-50');
+      }
+    });
+  }
+
+  function updateClearButtonsVisibility() {
+    // Show/hide clear search button
+    if (searchInput.value) {
+      clearSearchBtn.classList.remove('hidden');
+    } else {
+      clearSearchBtn.classList.add('hidden');
+    }
+    // Show/hide clear all filters button
+    if (searchInput.value || selectedGroup) {
+      clearFiltersBtn.classList.remove('hidden');
+    } else {
+      clearFiltersBtn.classList.add('hidden');
+    }
+  }
+
   function filterArticles() {
     const query = searchInput.value.toLowerCase().trim();
-    const selectedGroup = groupSelect.value;
 
     let filtered = articlesData;
 
@@ -202,11 +275,13 @@ for (const group of GROUPS) {
     // Update URL params
     const params = new URLSearchParams();
     if (searchInput.value) params.set('q', searchInput.value);
-    if (groupSelect.value) params.set('group', groupSelect.value);
+    if (selectedGroup) params.set('group', selectedGroup);
     const newUrl = params.toString() 
       ? `${window.location.pathname}?${params.toString()}`
       : window.location.pathname;
     window.history.replaceState({}, '', newUrl);
+
+    updateClearButtonsVisibility();
 
     // Render articles
     if (toShow.length === 0) {
@@ -228,7 +303,7 @@ for (const group of GROUPS) {
 
     // Update result count
     const total = articlesData.length;
-    if (searchInput.value || groupSelect.value) {
+    if (searchInput.value || selectedGroup) {
       resultCount.textContent = `Found ${filtered.length} articles (${total} total)`;
     } else {
       resultCount.textContent = `Showing latest ${Math.min(displayCount, filtered.length)} of ${total} articles`;
@@ -243,8 +318,29 @@ for (const group of GROUPS) {
     debounceTimer = setTimeout(updateDisplay, 300);
   });
 
-  groupSelect.addEventListener('change', () => {
-    displayCount = ITEMS_PER_PAGE; // Reset on filter change
+  // Clear search button
+  clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    displayCount = ITEMS_PER_PAGE;
+    updateDisplay();
+  });
+
+  // Group filter buttons
+  groupButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedGroup = btn.dataset.group;
+      updateGroupButtonStyles();
+      displayCount = ITEMS_PER_PAGE;
+      updateDisplay();
+    });
+  });
+
+  // Clear all filters
+  clearFiltersBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    selectedGroup = '';
+    updateGroupButtonStyles();
+    displayCount = ITEMS_PER_PAGE;
     updateDisplay();
   });
 
