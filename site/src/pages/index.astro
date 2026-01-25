@@ -2,23 +2,100 @@
 import Layout from "../layouts/Layout.astro";
 import ArticleCard from "../components/ArticleCard.astro";
 import { getAllArticles, getTotalCount, stripHtml, formatDate, formatCategory } from "../lib/db";
-import { getBlogMetadata, getBlogUrl } from "../lib/blogs";
+import { getBlogUrl } from "../lib/blogs";
 
 const articles = getAllArticles();
 const totalCount = getTotalCount();
 
-// Simplified category groups
+// Simplified category groups (mapped by blog_id for stability)
 const CATEGORY_GROUPS: Record<string, string[]> = {
-  "Azure": ["AI", "Analytics", "Arc", "Architecture", "Cloud Infrastructure", "Containers", "Data", "Database", "Databases", "Development", "Finops", "Governance", "HPC", "Linux", "Networking", "PaaS", "SAP", "Virtualization"],
-  "Microsoft 365": ["Collaboration", "Copilot", "Exchange", "Microsoft 365", "Outlook", "Productivity"],
-  "Security": ["Identity", "Security", "SysInternal"],
-  "Others": ["Communities", "Endpoints", "Fast Track", "Hardware", "IIS", "IOT", "ITOPS", "Others", "Partners", "Windows"],
+  "Azure": [
+    // AI
+    "aiplatformblog", "azure-ai-foundry-blog", "azure-ai-services-blog", "machinelearningblog", "mixed-reality-link", "themixedrealityblog",
+    // Analytics
+    "analyticsonazure", "azuresynapseanalyticsblog",
+    // Arc
+    "azurearcblog",
+    // Architecture
+    "azurearchitectureblog", "azureforisvandstartupstechnicalblog", "microsoftmechanicsblog", "microsoftmissioncriticalblog", "startupsatmicrosoftblog",
+    // Cloud Infrastructure
+    "azurecompute", "azureinfragurus", "azureinfrastructureblog", "azurestackblog", "azurestorageblog",
+    // Containers
+    "containers",
+    // Data
+    "azuredatablog", "azuredataexplorer", "azuredatafactoryblog", "dataarchitectureblog", "microsoft_graph_data_connect_for_sharepo", "microsoftdatamigration",
+    // Database
+    "adformysql", "adforpostgresql", "azuresqlblog", "oracleonazureblog", "sqlserver", "sqlserversupport", "ssis",
+    // Databases
+    "azuredbsupport",
+    // Development
+    "azuredevcommunityblog", "azurefederaldeveloperconnect", "educatordeveloperblog", "studentdeveloperblog",
+    // Finops
+    "finopsblog",
+    // Governance
+    "azuregovernanceandmanagementblog",
+    // HPC
+    "azurehighperformancecomputingblog",
+    // Linux
+    "linuxandopensourceblog",
+    // Networking
+    "azurenetworkingblog", "azurenetworksecurityblog", "networkingblog",
+    // PaaS
+    "adsapiblog", "appsonazureblog", "azurecommunicationservicesblog", "azureconfidentialcomputingblog", "azuremapsblog", "azurepaasblog", "azurespaceblog", "modernizationbestpracticesblog", "modernworkappconsult",
+    // SAP
+    "sapapplications",
+    // Virtualization
+    "azurevirtualdesktopblog", "fslogix-blog",
+  ],
+  "Microsoft 365": [
+    // Collaboration
+    "microsoftvivablog", "viva_amplify_blog", "viva_connections_blog", "viva_engage_blog", "viva_glint_blog", "viva_glint_partnersblog-board", "viva_insights_blog", "viva_learning_blog", "vivapulse-blog", "vivasales-blog",
+    // Copilot
+    "microsoft365copilotblog", "securitycopilotblog",
+    // Exchange
+    "exchange",
+    // Microsoft 365
+    "m365gcchcommunityhubblog-board", "microsoft365businessblog", "microsoft365insiderblog", "microsoft_365_archive_blog", "microsoft_365_backup_blog", "microsoft_365blog", "office365businessappsblog",
+    // Outlook
+    "outlook",
+    // Productivity
+    "excelblog", "microsoftedgeinsider", "microsoftformsblog", "microsoftteamsblog", "microsoftteamscommunityblog", "microsoftteamssupport", "officeeos", "onedriveblog", "plannerblog", "projectblog", "projectsupport", "sharepoint_embedded", "sharepoint_premium_blog", "skype_for_business_blog", "streamblog", "teamsfreeblog",
+  ],
+  "Security": [
+    // Identity
+    "accessblog", "microsoft-entra-blog",
+    // Security
+    "azurepurviewblog", "coreinfrastructureandsecurityblog", "defenderexternalattacksurfacemgmtblog", "defenderthreatintelligence", "microsoft-security-baselines", "microsoft-security-blog", "microsoftdefenderatpblog", "microsoftdefendercloudblog", "microsoftdefenderforoffice365blog", "microsoftdefenderiotblog", "microsoftsecurityexperts", "microsoftsentinelblog", "microsoftthreatprotectionblog", "vulnerability-management",
+    // SysInternal
+    "sysinternals-blog",
+  ],
+  "Others": [
+    // Communities
+    "communitynewsdesk", "educationblog", "healthcareandlifesciencesblog", "iltcommunicationblog", "manufacturing", "marketplace-blog", "microsoftindustryblog", "microsoftlearnblog", "mvp-blog", "nonprofittechies", "publicsectorblog",
+    // Endpoints
+    "configurationmanagerblog", "devicemanagementmicrosoft", "intunecustomersuccess", "microsoftintuneblog", "systemcenterblog",
+    // Fast Track
+    "fasttrackblog", "fasttrackforazureblog",
+    // Hardware
+    "hardwaredevcenter", "microsoftdeviceecosystemplatformblog", "surfaceitpro",
+    // IIS
+    "iis-support-blog",
+    // IOT
+    "iotblog",
+    // ITOPS
+    "itopstalkblog",
+    // Others
+    "askds", "azurelabservicesblog", "azuremigrationblog", "azureobservabilityblog", "azuretoolsblog", "corporate_communications_blog", "drivingadoptionblog", "filecab", "integrationsonazureblog", "messagingonazureblog", "microsoftusbblog", "smallbasic", "spblog", "weeklyroundupblog",
+    // Partners
+    "partnermarketingasaserviceblog-board", "partnernews",
+    // Windows
+    "windows-admin-center-blog", "windows-itpro-blog", "windowsdriverdev", "windowshardwarecertification",
+  ],
 };
 const metaCategories = Object.keys(CATEGORY_GROUPS);
 
 // Prepare article data for client-side filtering
 const articlesData = articles.map((a) => {
-  const meta = a.category ? getBlogMetadata(a.category) : undefined;
   return {
     id: a.id,
     title: a.title,
@@ -29,7 +106,6 @@ const articlesData = articles.map((a) => {
     author: a.author,
     category: a.category,
     categoryFormatted: formatCategory(a.category),
-    metaCategory: meta?.category || null,
     blogUrl: getBlogUrl(a.category) || null,
   };
 });
@@ -167,10 +243,10 @@ const articlesData = articles.map((a) => {
       });
     }
 
-    // Filter by category group
+    // Filter by category group (using blog_id)
     if (category) {
-      const categoryList = CATEGORY_GROUPS[category] || [];
-      filtered = filtered.filter(a => categoryList.includes(a.metaCategory));
+      const blogIds = CATEGORY_GROUPS[category] || [];
+      filtered = filtered.filter(a => blogIds.includes(a.category));
     }
 
     return filtered;
