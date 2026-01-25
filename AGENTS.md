@@ -38,8 +38,3 @@ npm run build                        # Build static site
 
 - Static files are generated at `site/dist/`
 - RSS feed is generated at `site/dist/feed.xml`
-
-## GitHub Pages
-
-- Enable Pages first: `gh api repos/{owner}/{repo}/pages -X POST -f build_type=workflow`
-- Workflow `enablement: true` fails due to insufficient GITHUB_TOKEN permissions
