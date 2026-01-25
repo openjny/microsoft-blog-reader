@@ -24,7 +24,7 @@ const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
   <body class="min-h-screen bg-gray-50 text-gray-900">
     <header class="bg-white border-b border-gray-200">
       <div class="max-w-4xl mx-auto px-4 py-6">
-        <a href="/" class="text-2xl font-bold text-blue-600 hover:text-blue-700">
+        <a href={import.meta.env.BASE_URL} class="text-2xl font-bold text-blue-600 hover:text-blue-700">
           {siteTitle}
         </a>
         <p class="text-gray-600 mt-1">{description}</p>
