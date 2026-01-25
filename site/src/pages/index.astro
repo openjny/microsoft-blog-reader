@@ -2,17 +2,19 @@
 import Layout from "../layouts/Layout.astro";
 import ArticleCard from "../components/ArticleCard.astro";
 import { getAllArticles, getTotalCount, stripHtml, formatDate, formatCategory } from "../lib/db";
-import { getBlogMetadata, getBlogUrl, BLOG_METADATA } from "../lib/blogs";
+import { getBlogMetadata, getBlogUrl } from "../lib/blogs";
 
 const articles = getAllArticles();
 const totalCount = getTotalCount();
 
-// Build meta-category list from BLOG_METADATA
-const metaCategorySet = new Set<string>();
-for (const [, meta] of Object.entries(BLOG_METADATA)) {
-  metaCategorySet.add(meta.category);
-}
-const metaCategories = Array.from(metaCategorySet).sort();
+// Simplified category groups
+const CATEGORY_GROUPS: Record<string, string[]> = {
+  "Azure": ["AI", "Analytics", "Arc", "Architecture", "Cloud Infrastructure", "Containers", "Data", "Database", "Databases", "Development", "Finops", "Governance", "HPC", "Linux", "Networking", "PaaS", "SAP", "Virtualization"],
+  "Microsoft 365": ["Collaboration", "Copilot", "Exchange", "Microsoft 365", "Outlook", "Productivity"],
+  "Security": ["Identity", "Security", "SysInternal"],
+  "Others": ["Communities", "Endpoints", "Fast Track", "Hardware", "IIS", "IOT", "ITOPS", "Others", "Partners", "Windows"],
+};
+const metaCategories = Object.keys(CATEGORY_GROUPS);
 
 // Prepare article data for client-side filtering
 const articlesData = articles.map((a) => {
@@ -42,7 +44,7 @@ const articlesData = articles.map((a) => {
         <input
           type="text"
           id="search-input"
-          placeholder="Search by title, description, or author..."
+          placeholder="Search by title or description..."
           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
@@ -86,7 +88,7 @@ const articlesData = articles.map((a) => {
   </div>
 </Layout>
 
-<script define:vars={{ articlesData }}>
+<script define:vars={{ articlesData, CATEGORY_GROUPS }}>
   const ITEMS_PER_PAGE = 30;
   let displayCount = ITEMS_PER_PAGE;
 
@@ -165,9 +167,10 @@ const articlesData = articles.map((a) => {
       });
     }
 
-    // Filter by meta-category
+    // Filter by category group
     if (category) {
-      filtered = filtered.filter(a => a.metaCategory === category);
+      const categoryList = CATEGORY_GROUPS[category] || [];
+      filtered = filtered.filter(a => categoryList.includes(a.metaCategory));
     }
 
     return filtered;
