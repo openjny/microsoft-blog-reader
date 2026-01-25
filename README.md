@@ -1,5 +1,7 @@
 # Microsoft Blog Reader
 
+**Live Site**: https://openjny.github.io/microsoft-blog-reader
+
 A system that periodically fetches Microsoft Tech Community blog RSS feeds, stores articles in a database, and provides a static site with an extended RSS feed.
 
 ## Overview
