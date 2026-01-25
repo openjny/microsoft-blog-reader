@@ -16,9 +16,18 @@ export const BLOG_METADATA: Record<string, { name: string; urlCategory: string }
   azureconfidentialcomputingblog: { name: "Azure Confidential Computing", urlCategory: "azure" },
   azuredevcommunityblog: { name: "Microsoft Developer Community", urlCategory: "azure" },
   azurefederaldeveloperconnect: { name: "Azure Federal Developer Connect", urlCategory: "azure" },
-  azureforisvandstartupstechnicalblog: { name: "Azure for ISV and Startups Technical", urlCategory: "azure" },
-  azuregovernanceandmanagementblog: { name: "Azure Governance and Management", urlCategory: "azure" },
-  azurehighperformancecomputingblog: { name: "Azure High Performance Computing", urlCategory: "azure" },
+  azureforisvandstartupstechnicalblog: {
+    name: "Azure for ISV and Startups Technical",
+    urlCategory: "azure",
+  },
+  azuregovernanceandmanagementblog: {
+    name: "Azure Governance and Management",
+    urlCategory: "azure",
+  },
+  azurehighperformancecomputingblog: {
+    name: "Azure High Performance Computing",
+    urlCategory: "azure",
+  },
   azureinfragurus: { name: "Azure Infra Gurus", urlCategory: "azure" },
   azureinfrastructureblog: { name: "Azure Infrastructure", urlCategory: "azure" },
   azurelabservicesblog: { name: "Azure Lab Services", urlCategory: "azure" },
@@ -55,7 +64,10 @@ export const BLOG_METADATA: Record<string, { name: string; urlCategory: string }
   azuresynapseanalyticsblog: { name: "Azure Synapse Analytics", urlCategory: "azuredatabases" },
   dataarchitectureblog: { name: "Data Architecture", urlCategory: "dataarchitecture" },
   microsoftdatamigration: { name: "Microsoft Data Migration", urlCategory: "azuredatabases" },
-  modernizationbestpracticesblog: { name: "Modernization Best Practices", urlCategory: "azuredatabases" },
+  modernizationbestpracticesblog: {
+    name: "Modernization Best Practices",
+    urlCategory: "azuredatabases",
+  },
   sqlserver: { name: "SQL Server", urlCategory: "sql-server" },
   sqlserversupport: { name: "SQLServer Support", urlCategory: "sql-server" },
   ssis: { name: "SSIS", urlCategory: "sql-server" },
@@ -101,41 +113,77 @@ export const BLOG_METADATA: Record<string, { name: string; urlCategory: string }
   viva_connections_blog: { name: "Viva Connections", urlCategory: "microsoft-viva" },
   viva_engage_blog: { name: "Viva Engage", urlCategory: "microsoft-viva" },
   viva_glint_blog: { name: "Viva Glint", urlCategory: "microsoft-viva" },
-  "viva_glint_partnersblog-board": { name: "Viva Glint Partnersblog board", urlCategory: "microsoft-viva" },
+  "viva_glint_partnersblog-board": {
+    name: "Viva Glint Partnersblog board",
+    urlCategory: "microsoft-viva",
+  },
   viva_insights_blog: { name: "Viva Insights", urlCategory: "microsoft-viva" },
   viva_learning_blog: { name: "Viva Learning", urlCategory: "microsoft-viva" },
   "vivapulse-blog": { name: "Viva Pulse", urlCategory: "microsoft-viva" },
   "vivasales-blog": { name: "Viva Sales", urlCategory: "microsoftviva" },
 
   // Content Management (SharePoint etc.)
-  microsoft_graph_data_connect_for_sharepo: { name: "Microsoft Graph Data Connect for SharePoint", urlCategory: "content_management" },
+  microsoft_graph_data_connect_for_sharepo: {
+    name: "Microsoft Graph Data Connect for SharePoint",
+    urlCategory: "content_management",
+  },
   sharepoint_embedded: { name: "SharePoint Embedded", urlCategory: "content_management" },
   sharepoint_premium_blog: { name: "SharePoint Premium", urlCategory: "content_management" },
   spblog: { name: "Microsoft SharePoint", urlCategory: "content_management" },
 
   // Microsoft Intune / Endpoints
   configurationmanagerblog: { name: "Configuration Manager", urlCategory: "microsoftintune" },
-  devicemanagementmicrosoft: { name: "Device Management Microsoft", urlCategory: "microsoftintune" },
+  devicemanagementmicrosoft: {
+    name: "Device Management Microsoft",
+    urlCategory: "microsoftintune",
+  },
   intunecustomersuccess: { name: "Intune Customer Success", urlCategory: "microsoftintune" },
   microsoftintuneblog: { name: "Microsoft Intune", urlCategory: "microsoftintune" },
   systemcenterblog: { name: "System Center", urlCategory: "systemcenter" },
 
   // Security
   azurepurviewblog: { name: "Azure Purview", urlCategory: "microsoft-security" },
-  coreinfrastructureandsecurityblog: { name: "Core Infrastructure and Security", urlCategory: "microsoft-security" },
-  defenderexternalattacksurfacemgmtblog: { name: "Defender External Attack Surface Mgmt", urlCategory: "microsoft-security" },
-  defenderthreatintelligence: { name: "Defender Threat Intelligence", urlCategory: "microsoft-security" },
+  coreinfrastructureandsecurityblog: {
+    name: "Core Infrastructure and Security",
+    urlCategory: "microsoft-security",
+  },
+  defenderexternalattacksurfacemgmtblog: {
+    name: "Defender External Attack Surface Mgmt",
+    urlCategory: "microsoft-security",
+  },
+  defenderthreatintelligence: {
+    name: "Defender Threat Intelligence",
+    urlCategory: "microsoft-security",
+  },
   "microsoft-entra-blog": { name: "Microsoft Entra", urlCategory: "microsoft-security" },
-  "microsoft-security-baselines": { name: "Microsoft Security Baselines", urlCategory: "microsoft-security" },
+  "microsoft-security-baselines": {
+    name: "Microsoft Security Baselines",
+    urlCategory: "microsoft-security",
+  },
   "microsoft-security-blog": { name: "Microsoft Security", urlCategory: "microsoft-security" },
   microsoftdefenderatpblog: { name: "Microsoft Defender ATP", urlCategory: "microsoft-security" },
-  microsoftdefendercloudblog: { name: "Microsoft Defender Cloud", urlCategory: "microsoft-security" },
-  microsoftdefenderforoffice365blog: { name: "Microsoft Defender for Office 365", urlCategory: "microsoft-security" },
+  microsoftdefendercloudblog: {
+    name: "Microsoft Defender Cloud",
+    urlCategory: "microsoft-security",
+  },
+  microsoftdefenderforoffice365blog: {
+    name: "Microsoft Defender for Office 365",
+    urlCategory: "microsoft-security",
+  },
   microsoftdefenderiotblog: { name: "Microsoft Defender IoT", urlCategory: "microsoft-security" },
-  microsoftsecurityexperts: { name: "Microsoft Security Experts", urlCategory: "microsoft-security" },
+  microsoftsecurityexperts: {
+    name: "Microsoft Security Experts",
+    urlCategory: "microsoft-security",
+  },
   microsoftsentinelblog: { name: "Microsoft Sentinel", urlCategory: "microsoft-security" },
-  microsoftthreatprotectionblog: { name: "Microsoft Defender XDR", urlCategory: "microsoft-security" },
-  "vulnerability-management": { name: "Vulnerability Management", urlCategory: "microsoft-security" },
+  microsoftthreatprotectionblog: {
+    name: "Microsoft Defender XDR",
+    urlCategory: "microsoft-security",
+  },
+  "vulnerability-management": {
+    name: "Vulnerability Management",
+    urlCategory: "microsoft-security",
+  },
 
   // Windows
   "fslogix-blog": { name: "FSLogix", urlCategory: "windows" },
@@ -143,7 +191,10 @@ export const BLOG_METADATA: Record<string, { name: string; urlCategory: string }
   "windows-admin-center-blog": { name: "Windows Admin Center", urlCategory: "windows" },
   "windows-itpro-blog": { name: "Windows IT Pro", urlCategory: "windows" },
   windowsdriverdev: { name: "Windows Driver Dev", urlCategory: "windows" },
-  windowshardwarecertification: { name: "Windows Hardware Certification", urlCategory: "winhec-online" },
+  windowshardwarecertification: {
+    name: "Windows Hardware Certification",
+    urlCategory: "winhec-online",
+  },
 
   // Windows Server
   containers: { name: "Containers", urlCategory: "windows-server" },
@@ -154,14 +205,23 @@ export const BLOG_METADATA: Record<string, { name: string; urlCategory: string }
   fasttrackforazureblog: { name: "Fast Track for Azure", urlCategory: "fasttrack" },
 
   // Partner Community
-  "partnermarketingasaserviceblog-board": { name: "Partner Marketing as a Service", urlCategory: "partnercommunity" },
+  "partnermarketingasaserviceblog-board": {
+    name: "Partner Marketing as a Service",
+    urlCategory: "partnercommunity",
+  },
   partnernews: { name: "Partner News", urlCategory: "partnercommunity" },
 
   // Communities
   communitynewsdesk: { name: "Community News Desk", urlCategory: "communitynewsdesk" },
   educationblog: { name: "Education", urlCategory: "educationsector" },
-  "m365gcchcommunityhubblog-board": { name: "M365 GCCH Community Hub", urlCategory: "microsoft365" },
-  healthcareandlifesciencesblog: { name: "Healthcare And Life Sciences", urlCategory: "healthcareandlifesciences" },
+  "m365gcchcommunityhubblog-board": {
+    name: "M365 GCCH Community Hub",
+    urlCategory: "microsoft365",
+  },
+  healthcareandlifesciencesblog: {
+    name: "Healthcare And Life Sciences",
+    urlCategory: "healthcareandlifesciences",
+  },
   iltcommunicationblog: { name: "ILT Communication", urlCategory: "partnercommunity" },
   manufacturing: { name: "Manufacturing", urlCategory: "azure" },
   "marketplace-blog": { name: "Marketplace", urlCategory: "partnercommunity" },
@@ -170,18 +230,27 @@ export const BLOG_METADATA: Record<string, { name: string; urlCategory: string }
   "mvp-blog": { name: "Microsoft MVP Program", urlCategory: "mvp" },
   nonprofittechies: { name: "Non profit Techies", urlCategory: "microsoftfornonprofits" },
   publicsectorblog: { name: "Public Sector", urlCategory: "publicsector" },
-  educatordeveloperblog: { name: "Educator Developer", urlCategory: "microsoft-learn-for-educators" },
+  educatordeveloperblog: {
+    name: "Educator Developer",
+    urlCategory: "microsoft-learn-for-educators",
+  },
   studentdeveloperblog: { name: "Student Developer", urlCategory: "educationsector" },
 
   // Hardware
   hardwaredevcenter: { name: "Hardware Dev Center", urlCategory: "winhec-online" },
-  microsoftdeviceecosystemplatformblog: { name: "Microsoft Device Ecosystem Platform", urlCategory: "microsoftdeviceecosystemplatform" },
+  microsoftdeviceecosystemplatformblog: {
+    name: "Microsoft Device Ecosystem Platform",
+    urlCategory: "microsoftdeviceecosystemplatform",
+  },
   surfaceitpro: { name: "Surface IT Pro", urlCategory: "surfacedevices" },
 
   // Others
   adsapiblog: { name: "Ads API", urlCategory: "bing" },
   askds: { name: "Ask Directory Services", urlCategory: "azure" },
-  corporate_communications_blog: { name: "Corporate Communications", urlCategory: "corporate_communications" },
+  corporate_communications_blog: {
+    name: "Corporate Communications",
+    urlCategory: "corporate_communications",
+  },
   drivingadoptionblog: { name: "Driving Adoption", urlCategory: "drivingadoption" },
   filecab: { name: "File CAB", urlCategory: "azure" },
   "iis-support-blog": { name: "IIS Support", urlCategory: "microsoft-iis" },
@@ -189,7 +258,10 @@ export const BLOG_METADATA: Record<string, { name: string; urlCategory: string }
   itopstalkblog: { name: "IT Ops Talk", urlCategory: "itopstalk" },
   microsoftedgeinsider: { name: "Microsoft Edge Insider", urlCategory: "microsoftedgeinsider" },
   microsoftmechanicsblog: { name: "Microsoft Mechanics", urlCategory: "microsoftmechanics" },
-  microsoftmissioncriticalblog: { name: "Microsoft Mission Critical", urlCategory: "microsoftmissioncriticalcommunityhub" },
+  microsoftmissioncriticalblog: {
+    name: "Microsoft Mission Critical",
+    urlCategory: "microsoftmissioncriticalcommunityhub",
+  },
   microsoftusbblog: { name: "Microsoft USB", urlCategory: "microsoftusb" },
   smallbasic: { name: "Small Basic", urlCategory: "azure" },
   weeklyroundupblog: { name: "Weekly Roundup", urlCategory: "azure" },
@@ -210,9 +282,7 @@ function normalizeKey(s: string): string {
   return s.toLowerCase().replace(/[-_]/g, "");
 }
 
-export function getBlogMetadata(
-  slug: string
-): { name: string; urlCategory: string } | undefined {
+export function getBlogMetadata(slug: string): { name: string; urlCategory: string } | undefined {
   const slugLower = slug.toLowerCase();
 
   if (BLOG_METADATA[slugLower]) {
