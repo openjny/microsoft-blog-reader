@@ -1,5 +1,5 @@
 ---
-import { type Article, stripHtml, formatDate, formatBoard } from "../lib/db";
+import { type Article, stripHtml, formatBoard } from "../lib/db";
 import { getBlogUrl, getBoardGroup, GROUP_COLORS } from "../lib/blogs";
 
 interface Props {
@@ -38,7 +38,7 @@ const colors = GROUP_COLORS[group];
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
-      <time datetime={article.pub_date}>{formatDate(article.pub_date)}</time>
+      <time class="local-time" datetime={article.pub_date}>Loading...</time>
     </span>
     {article.author && (
       <span class="inline-flex items-center gap-1">

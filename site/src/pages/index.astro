@@ -1,7 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import ArticleCard from "../components/ArticleCard.astro";
-import { getAllArticles, getTotalCount, stripHtml, formatDate, formatBoard } from "../lib/db";
+import { getAllArticles, getTotalCount, stripHtml, formatBoard } from "../lib/db";
 import { getBlogUrl, GROUPS, BOARDS, ALIASES, GROUP_COLORS, getBoardGroup } from "../lib/blogs";
 
 const articles = getAllArticles();
@@ -10,17 +9,12 @@ const totalCount = getTotalCount();
 // Prepare article data for client-side filtering
 const articlesData = articles.map((a) => {
   const group = a.board ? getBoardGroup(a.board) : "Others";
-  // Get local date for grouping (same as formatDate uses)
-  const localDate = new Date(a.pub_date);
-  const localDateStr = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
   return {
     id: a.id,
     title: a.title,
     link: a.link,
     description: stripHtml(a.description),
     pubDate: a.pub_date,
-    pubDateFormatted: formatDate(a.pub_date),
-    pubDateLocal: localDateStr,
     author: a.author,
     board: a.board,
     boardFormatted: formatBoard(a.board),
@@ -106,34 +100,7 @@ for (const group of GROUPS) {
 
   <!-- Article List -->
   <div id="article-list" class="space-y-4">
-    {(() => {
-      const initial = articles.slice(0, 30);
-      // Pre-compute local dates for all articles
-      const articlesWithDates = initial.map((article) => {
-        const pubDateObj = new Date(article.pub_date);
-        const localDate = `${pubDateObj.getFullYear()}-${String(pubDateObj.getMonth() + 1).padStart(2, '0')}-${String(pubDateObj.getDate()).padStart(2, '0')}`;
-        return { article, pubDateObj, localDate };
-      });
-      
-      return articlesWithDates.map((item, index) => {
-        const nextItem = articlesWithDates[index + 1];
-        const showDateSeparator = nextItem && nextItem.localDate !== item.localDate;
-        return (
-          <>
-            <ArticleCard article={item.article} />
-            {showDateSeparator && (
-              <div class="date-separator flex items-center gap-3 py-2" data-date={item.localDate}>
-                <div class="h-px flex-1 bg-gray-200" />
-                <span class="text-sm font-medium text-gray-500 whitespace-nowrap">
-                  {item.pubDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
-                <div class="h-px flex-1 bg-gray-200" />
-              </div>
-            )}
-          </>
-        );
-      });
-    })()}
+    <!-- Initial content rendered by client-side JS for correct timezone -->
   </div>
 
   <!-- Load More Button -->
@@ -202,14 +169,35 @@ for (const group of GROUPS) {
               .replace(/>/g, '&gt;')
               .replace(/"/g, '&quot;');
   }
-  function renderDateSeparator(dateStr) {
-    const date = new Date(dateStr + 'T00:00:00');
+
+  function formatDateLocal(isoDate) {
+    const date = new Date(isoDate);
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const day = date.getDate();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    // Get timezone offset
+    const offset = -date.getTimezoneOffset();
+    const sign = offset >= 0 ? '+' : '-';
+    const offsetHours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+    const offsetMinutes = String(Math.abs(offset) % 60).padStart(2, '0');
+    return `${month} ${day}, ${hours}:${minutes} (${sign}${offsetHours}:${offsetMinutes})`;
+  }
+
+  function getLocalDateStr(isoDate) {
+    const date = new Date(isoDate);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  function renderDateSeparator(isoDate) {
+    const date = new Date(isoDate);
     const formatted = date.toLocaleDateString('en-US', { 
       weekday: 'short', 
       month: 'short', 
       day: 'numeric', 
       year: 'numeric' 
     });
+    const dateStr = getLocalDateStr(isoDate);
     return `
       <div class="date-separator flex items-center gap-3 py-2" data-date="${dateStr}">
         <div class="h-px flex-1 bg-gray-200"></div>
@@ -250,7 +238,7 @@ for (const group of GROUPS) {
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <time datetime="${article.pubDate}">${article.pubDateFormatted}</time>
+            <time datetime="${article.pubDate}">${formatDateLocal(article.pubDate)}</time>
           </span>
           ${authorHtml}
           ${boardHtml}
@@ -341,8 +329,10 @@ for (const group of GROUPS) {
         const nextArticle = toShow[i + 1];
         html += renderArticle(article);
         // Show separator after this article if next article has different date
-        if (nextArticle && nextArticle.pubDateLocal !== article.pubDateLocal) {
-          html += renderDateSeparator(article.pubDateLocal);
+        const currentLocalDate = getLocalDateStr(article.pubDate);
+        const nextLocalDate = nextArticle ? getLocalDateStr(nextArticle.pubDate) : null;
+        if (nextLocalDate && nextLocalDate !== currentLocalDate) {
+          html += renderDateSeparator(article.pubDate);
         }
       }
       articleList.innerHTML = html;
@@ -405,8 +395,6 @@ for (const group of GROUPS) {
     updateDisplay();
   });
 
-  // Initial render if URL has params
-  if (initialQuery || initialGroup) {
-    updateDisplay();
-  }
+  // Initial render (always use client-side for correct timezone)
+  updateDisplay();
 </script>
