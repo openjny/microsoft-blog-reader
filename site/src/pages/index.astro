@@ -102,7 +102,29 @@ for (const group of GROUPS) {
 
   <!-- Article List -->
   <div id="article-list" class="space-y-4">
-    {articles.slice(0, 30).map((article) => <ArticleCard article={article} />)}
+    {(() => {
+      const initial = articles.slice(0, 30);
+      let lastDate = '';
+      return initial.map((article) => {
+        const currentDate = article.pub_date.split('T')[0];
+        const showDateHeader = currentDate !== lastDate;
+        lastDate = currentDate;
+        return (
+          <>
+            {showDateHeader && (
+              <div class="date-separator flex items-center gap-3 py-2" data-date={currentDate}>
+                <div class="h-px flex-1 bg-gray-200" />
+                <span class="text-sm font-medium text-gray-500 whitespace-nowrap">
+                  {new Date(currentDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+                <div class="h-px flex-1 bg-gray-200" />
+              </div>
+            )}
+            <ArticleCard article={article} />
+          </>
+        );
+      });
+    })()}
   </div>
 
   <!-- Load More Button -->
@@ -171,7 +193,22 @@ for (const group of GROUPS) {
               .replace(/>/g, '&gt;')
               .replace(/"/g, '&quot;');
   }
-
+  function renderDateSeparator(dateStr) {
+    const date = new Date(dateStr);
+    const formatted = date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    return `
+      <div class="date-separator flex items-center gap-3 py-2" data-date="${dateStr}">
+        <div class="h-px flex-1 bg-gray-200"></div>
+        <span class="text-sm font-medium text-gray-500 whitespace-nowrap">${formatted}</span>
+        <div class="h-px flex-1 bg-gray-200"></div>
+      </div>
+    `;
+  }
   function renderArticle(article) {
     const truncatedDesc = article.description.length > 200 
       ? article.description.slice(0, 200) + '...' 
@@ -283,13 +320,23 @@ for (const group of GROUPS) {
 
     updateClearButtonsVisibility();
 
-    // Render articles
+    // Render articles with date separators
     if (toShow.length === 0) {
       articleList.classList.add('hidden');
       noResults.classList.remove('hidden');
       loadMoreContainer.classList.add('hidden');
     } else {
-      articleList.innerHTML = toShow.map(renderArticle).join('');
+      let html = '';
+      let lastDate = '';
+      for (const article of toShow) {
+        const currentDate = article.pubDate.split('T')[0];
+        if (currentDate !== lastDate) {
+          html += renderDateSeparator(currentDate);
+          lastDate = currentDate;
+        }
+        html += renderArticle(article);
+      }
+      articleList.innerHTML = html;
       articleList.classList.remove('hidden');
       noResults.classList.add('hidden');
 
