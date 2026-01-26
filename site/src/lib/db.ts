@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import Database from "better-sqlite3";
+import Database, { type Database as DatabaseType } from "better-sqlite3";
 import { getBlogMetadata } from "./blogs";
 
 const DB_PATH = join(process.cwd(), "..", "data", "feeds.db");
@@ -15,8 +15,29 @@ export interface Article {
   board: string | null;
 }
 
-function getDb() {
-  return new Database(DB_PATH, { readonly: true });
+/**
+ * Singleton database connection.
+ * The connection is lazily initialized and reused across all queries.
+ * Since we're in a build-time context, the connection will be closed when the process exits.
+ */
+let dbInstance: DatabaseType | null = null;
+
+function getDb(): DatabaseType {
+  if (!dbInstance) {
+    dbInstance = new Database(DB_PATH, { readonly: true });
+  }
+  return dbInstance;
+}
+
+/**
+ * Close the database connection.
+ * Call this when you're done with all database operations.
+ */
+export function closeDb(): void {
+  if (dbInstance) {
+    dbInstance.close();
+    dbInstance = null;
+  }
 }
 
 export function getArticles(limit = 30): Article[] {
@@ -27,9 +48,7 @@ export function getArticles(limit = 30): Article[] {
     ORDER BY pub_date DESC
     LIMIT ?
   `);
-  const articles = stmt.all(limit) as Article[];
-  db.close();
-  return articles;
+  return stmt.all(limit) as Article[];
 }
 
 export function getAllArticles(): Article[] {
@@ -39,9 +58,7 @@ export function getAllArticles(): Article[] {
     FROM articles
     ORDER BY pub_date DESC
   `);
-  const articles = stmt.all() as Article[];
-  db.close();
-  return articles;
+  return stmt.all() as Article[];
 }
 
 export function getArticlesByBoard(board: string): Article[] {
@@ -52,9 +69,7 @@ export function getArticlesByBoard(board: string): Article[] {
     WHERE board = ?
     ORDER BY pub_date DESC
   `);
-  const articles = stmt.all(board) as Article[];
-  db.close();
-  return articles;
+  return stmt.all(board) as Article[];
 }
 
 export function getAllBoards(): string[] {
@@ -63,7 +78,6 @@ export function getAllBoards(): string[] {
     SELECT DISTINCT board FROM articles WHERE board IS NOT NULL ORDER BY board
   `);
   const rows = stmt.all() as { board: string }[];
-  db.close();
   return rows.map((r) => r.board);
 }
 
@@ -71,7 +85,6 @@ export function getTotalCount(): number {
   const db = getDb();
   const stmt = db.prepare("SELECT COUNT(*) as count FROM articles");
   const result = stmt.get() as { count: number };
-  db.close();
   return result.count;
 }
 
