@@ -125,6 +125,7 @@ for (const group of GROUPS) {
   let displayCount = ITEMS_PER_PAGE;
   let selectedGroup = '';
 
+  // DOM elements with type assertions for safety
   const searchInput = document.getElementById('search-input');
   const clearSearchBtn = document.getElementById('clear-search');
   const groupButtons = document.querySelectorAll('.group-btn');
@@ -134,6 +135,12 @@ for (const group of GROUPS) {
   const noResults = document.getElementById('no-results');
   const loadMoreContainer = document.getElementById('load-more-container');
   const loadMoreBtn = document.getElementById('load-more-btn');
+
+  // Guard clause: ensure required DOM elements exist
+  if (!searchInput || !clearSearchBtn || !clearFiltersBtn || !articleList || !resultCount || !noResults || !loadMoreContainer || !loadMoreBtn) {
+    console.error('Required DOM elements not found');
+    throw new Error('Required DOM elements not found');
+  }
 
   // Initialize from URL params
   const urlParams = new URLSearchParams(window.location.search);
@@ -206,10 +213,16 @@ for (const group of GROUPS) {
       </div>
     `;
   }
+  // Constants
+  const DESCRIPTION_MAX_LENGTH = 200;
+
+  function truncateText(text, maxLength) {
+    if (!text || text.length <= maxLength) return text || '';
+    return text.slice(0, maxLength) + '...';
+  }
+
   function renderArticle(article) {
-    const truncatedDesc = article.description.length > 200 
-      ? article.description.slice(0, 200) + '...' 
-      : article.description;
+    const truncatedDesc = truncateText(article.description, DESCRIPTION_MAX_LENGTH);
 
     const authorHtml = article.author 
       ? `<span class="inline-flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg><span>${escapeHtml(article.author)}</span></span>` 
@@ -221,8 +234,8 @@ for (const group of GROUPS) {
         : `<span class="${article.colors.bg} ${article.colors.text} px-2 py-0.5 rounded text-xs font-medium">${escapeHtml(article.boardFormatted)}</span>`
       : '';
 
-    const descHtml = truncatedDesc 
-      ? `<p class="text-gray-600 text-sm leading-relaxed">${escapeHtml(truncatedDesc)}</p>` 
+    const descriptionHtml = truncatedDesc 
+      ? `<p class="text-gray-600 text-sm leading-relaxed mb-3">${escapeHtml(truncatedDesc)}</p>` 
       : '';
 
     return `
@@ -232,7 +245,7 @@ for (const group of GROUPS) {
             ${escapeHtml(article.title)}
           </a>
         </h2>
-        ${descHtml ? `<p class="text-gray-600 text-sm leading-relaxed mb-3">${escapeHtml(article.description.length > 200 ? article.description.slice(0, 200) + '...' : article.description)}</p>` : ''}
+        ${descriptionHtml}
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
           <span class="inline-flex items-center gap-1">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

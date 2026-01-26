@@ -13,6 +13,7 @@ import re
 import sqlite3
 import sys
 import time
+import traceback
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -75,37 +76,41 @@ def extract_board(url: str) -> str | None:
     return None
 
 
-def parse_pub_date(entry: dict[str, Any]) -> str:
+def parse_pub_date(entry: Any) -> str:
     """Parse publication date from feed entry to ISO 8601 format."""
-    if hasattr(entry, "published_parsed") and entry.published_parsed:
+    published_parsed = getattr(entry, "published_parsed", None)
+    if published_parsed:
         dt = datetime(
-            entry.published_parsed.tm_year,
-            entry.published_parsed.tm_mon,
-            entry.published_parsed.tm_mday,
-            entry.published_parsed.tm_hour,
-            entry.published_parsed.tm_min,
-            entry.published_parsed.tm_sec,
+            published_parsed.tm_year,
+            published_parsed.tm_mon,
+            published_parsed.tm_mday,
+            published_parsed.tm_hour,
+            published_parsed.tm_min,
+            published_parsed.tm_sec,
             tzinfo=UTC,
         )
         return dt.isoformat()
-    if hasattr(entry, "updated_parsed") and entry.updated_parsed:
+
+    updated_parsed = getattr(entry, "updated_parsed", None)
+    if updated_parsed:
         dt = datetime(
-            entry.updated_parsed.tm_year,
-            entry.updated_parsed.tm_mon,
-            entry.updated_parsed.tm_mday,
-            entry.updated_parsed.tm_hour,
-            entry.updated_parsed.tm_min,
-            entry.updated_parsed.tm_sec,
+            updated_parsed.tm_year,
+            updated_parsed.tm_mon,
+            updated_parsed.tm_mday,
+            updated_parsed.tm_hour,
+            updated_parsed.tm_min,
+            updated_parsed.tm_sec,
             tzinfo=UTC,
         )
         return dt.isoformat()
+
     # Fallback to current time
     return datetime.now(UTC).isoformat()
 
 
-def fetch_rss_with_retry() -> feedparser.FeedParserDict:
+def fetch_rss_with_retry() -> Any:
     """Fetch RSS feed with retry logic."""
-    last_error = None
+    last_error: Exception | None = None
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
@@ -113,7 +118,10 @@ def fetch_rss_with_retry() -> feedparser.FeedParserDict:
             feed = feedparser.parse(RSS_URL)
 
             if feed.bozo and feed.bozo_exception:
-                raise feed.bozo_exception
+                exc = feed.bozo_exception
+                if isinstance(exc, Exception):
+                    raise exc
+                raise RuntimeError(f"Feed parsing error: {exc}")
 
             if not feed.entries:
                 raise ValueError("No entries found in RSS feed")
@@ -131,18 +139,18 @@ def fetch_rss_with_retry() -> feedparser.FeedParserDict:
     raise RuntimeError(f"Failed to fetch RSS after {MAX_RETRIES} attempts: {last_error}")
 
 
-def upsert_articles(conn: sqlite3.Connection, feed: feedparser.FeedParserDict) -> int:
+def upsert_articles(conn: sqlite3.Connection, feed: Any) -> int:
     """Insert or update articles in database. Returns count of new articles."""
     cursor = conn.cursor()
     new_count = 0
 
     for entry in feed.entries:
-        guid = entry.get("id") or entry.get("link", "")
-        title = entry.get("title", "")
-        link = entry.get("link", "")
-        description = entry.get("summary", "") or entry.get("description", "")
+        guid: str = entry.get("id") or entry.get("link", "")
+        title: str = entry.get("title", "")
+        link: str = entry.get("link", "")
+        description: str = entry.get("summary", "") or entry.get("description", "")
         pub_date = parse_pub_date(entry)
-        author = entry.get("author", "") or entry.get("dc_creator", "")
+        author: str = entry.get("author", "") or entry.get("dc_creator", "")
         board = extract_board(link)
 
         # Check if article exists
@@ -201,6 +209,7 @@ def main() -> int:
 
     except Exception as e:
         logger.error(f"Process failed: {e}")
+        logger.error(f"Stack trace:\n{traceback.format_exc()}")
         return 1
 
     finally:
