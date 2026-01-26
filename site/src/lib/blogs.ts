@@ -9,7 +9,7 @@
  * - displayName: User-friendly name for the blog
  */
 
-export type Group = "Azure" | "Microsoft 365" | "Security" | "Others";
+export type Group = "Azure" | "Microsoft 365" | "Security" | "Windows" | "Others";
 
 /**
  * Color scheme for each group (Tailwind classes).
@@ -35,6 +35,12 @@ export const GROUP_COLORS: Record<
     text: "text-amber-800",
     hover: "hover:bg-amber-200",
     border: "border-amber-200",
+  },
+  Windows: {
+    bg: "bg-purple-100",
+    text: "text-purple-800",
+    hover: "hover:bg-purple-200",
+    border: "border-purple-200",
   },
   Others: {
     bg: "bg-gray-100",
@@ -158,7 +164,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
   containers: {
     displayName: "Containers",
     category: "windows-server",
-    group: "Azure",
+    group: "Windows",
   },
   // Data
   azuredatablog: {
@@ -184,7 +190,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
   microsoftgraphdataconnectforsharepo: {
     displayName: "Microsoft Graph Data Connect for SharePoint",
     category: "content_management",
-    group: "Azure",
+    group: "Microsoft 365",
   },
   microsoftdatamigration: {
     displayName: "Microsoft Data Migration",
@@ -242,12 +248,12 @@ export const BOARDS: Record<string, BoardMetadata> = {
   educatordeveloperblog: {
     displayName: "Educator Developer",
     category: "microsoft-learn-for-educators",
-    group: "Azure",
+    group: "Others",
   },
   studentdeveloperblog: {
     displayName: "Student Developer",
     category: "educationsector",
-    group: "Azure",
+    group: "Others",
   },
   // FinOps
   finopsblog: { displayName: "FinOps", category: "azure", group: "Azure" },
@@ -283,10 +289,10 @@ export const BOARDS: Record<string, BoardMetadata> = {
   networkingblog: {
     displayName: "Networking",
     category: "windows-server",
-    group: "Azure",
+    group: "Windows",
   },
   // PaaS
-  adsapiblog: { displayName: "Ads API", category: "bing", group: "Azure" },
+  adsapiblog: { displayName: "Ads API", category: "bing", group: "Others" },
   appsonazureblog: {
     displayName: "Apps on Azure",
     category: "azure",
@@ -325,7 +331,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
   modernworkappconsult: {
     displayName: "Modern Work App Consult",
     category: "microsoft365",
-    group: "Azure",
+    group: "Microsoft 365",
   },
   // SAP
   sapapplications: {
@@ -339,7 +345,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
     category: "azure",
     group: "Azure",
   },
-  fslogixblog: { displayName: "FSLogix", category: "windows", group: "Azure" },
+  fslogixblog: { displayName: "FSLogix", category: "windows", group: "Windows" },
 
   // ============================================
   // Microsoft 365
@@ -630,7 +636,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
   sysinternalsblog: {
     displayName: "Sysinternals",
     category: "windows",
-    group: "Security",
+    group: "Windows",
   },
 
   // ============================================
@@ -660,7 +666,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
   manufacturing: {
     displayName: "Manufacturing",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   marketplaceblog: {
     displayName: "Marketplace",
@@ -670,7 +676,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
   microsoftindustryblog: {
     displayName: "Microsoft Industry",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   microsoftlearnblog: {
     displayName: "Microsoft Learn",
@@ -733,7 +739,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
   hardwaredevcenter: {
     displayName: "Hardware Dev Center",
     category: "winhec-online",
-    group: "Others",
+    group: "Windows",
   },
   microsoftdeviceecosystemplatformblog: {
     displayName: "Microsoft Device Ecosystem Platform",
@@ -763,27 +769,27 @@ export const BOARDS: Record<string, BoardMetadata> = {
   askds: {
     displayName: "Ask Directory Services",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   azurelabservicesblog: {
     displayName: "Azure Lab Services",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   azuremigrationblog: {
     displayName: "Azure Migration and Modernization",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   azureobservabilityblog: {
     displayName: "Azure Observability",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   azuretoolsblog: {
     displayName: "Azure Tools",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   corporatecommunicationsblog: {
     displayName: "Corporate Communications",
@@ -795,16 +801,16 @@ export const BOARDS: Record<string, BoardMetadata> = {
     category: "drivingadoption",
     group: "Others",
   },
-  filecab: { displayName: "File CAB", category: "azure", group: "Others" },
+  filecab: { displayName: "File CAB", category: "azure", group: "Azure" },
   integrationsonazureblog: {
     displayName: "Integrations on Azure",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   messagingonazureblog: {
     displayName: "Messaging on Azure",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   microsoftusbblog: {
     displayName: "Microsoft USB",
@@ -814,12 +820,12 @@ export const BOARDS: Record<string, BoardMetadata> = {
   smallbasic: {
     displayName: "Small Basic",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   weeklyroundupblog: {
     displayName: "Weekly Roundup",
     category: "azure",
-    group: "Others",
+    group: "Azure",
   },
   // Partners
   partnermarketingasaserviceblogboard: {
@@ -836,22 +842,22 @@ export const BOARDS: Record<string, BoardMetadata> = {
   windowsadmincenterblog: {
     displayName: "Windows Admin Center",
     category: "windows",
-    group: "Others",
+    group: "Windows",
   },
   windowsitproblog: {
     displayName: "Windows IT Pro",
     category: "windows",
-    group: "Others",
+    group: "Windows",
   },
   windowsdriverdev: {
     displayName: "Windows Driver Dev",
     category: "windows",
-    group: "Others",
+    group: "Windows",
   },
   windowshardwarecertification: {
     displayName: "Windows Hardware Certification",
     category: "winhec-online",
-    group: "Others",
+    group: "Windows",
   },
 };
 
@@ -866,12 +872,13 @@ export const ALIASES: Record<string, string> = {
   iltcommunicationsblog: "iltcommunicationblog",
   azuredatabasesupportblog: "azuredbsupport",
   exchangeteamblog: "exchange",
+  microsoftdevelopercommunity: "azuredevcommunityblog",
 };
 
 /**
  * List of available groups for UI filtering.
  */
-export const GROUPS: Group[] = ["Azure", "Microsoft 365", "Security", "Others"];
+export const GROUPS: Group[] = ["Azure", "Microsoft 365", "Security", "Windows", "Others"];
 
 /**
  * Normalize a board name to a canonical boardId.
