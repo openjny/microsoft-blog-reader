@@ -6,6 +6,8 @@ on:
         paths:
             - "data/feeds.db"
             - "site/**"
+    repository_dispatch:
+        types: [rss-updated]
     workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
