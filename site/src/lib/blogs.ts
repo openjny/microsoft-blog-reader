@@ -592,6 +592,11 @@ export const BOARDS: Record<string, BoardMetadata> = {
     category: "microsoft-security",
     group: "Security",
   },
+  microsoftsecuritycommunity: {
+    displayName: "Microsoft Security Community",
+    category: "microsoft-security",
+    group: "Security",
+  },
   microsoftdefenderatpblog: {
     displayName: "Microsoft Defender ATP",
     category: "microsoft-security",
