@@ -135,7 +135,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
     group: "Azure",
   },
   // Cloud Infrastructure
-  azurecompute: {
+  azurecomputeblog: {
     displayName: "Azure Compute",
     category: "azure",
     group: "Azure",
@@ -567,7 +567,7 @@ export const BOARDS: Record<string, BoardMetadata> = {
     category: "microsoft-security",
     group: "Security",
   },
-  coreinfrastructureandsecurityblog: {
+  coreinfrastructureandsecurity: {
     displayName: "Core Infrastructure and Security",
     category: "microsoft-security",
     group: "Security",
