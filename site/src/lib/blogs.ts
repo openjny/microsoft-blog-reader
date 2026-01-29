@@ -776,6 +776,11 @@ export const BOARDS: Record<string, BoardMetadata> = {
     category: "azure",
     group: "Azure",
   },
+  azureintegrationservicesblog: {
+    displayName: "Azure Integration Services",
+    category: "azure",
+    group: "Azure",
+  },
   azurelabservicesblog: {
     displayName: "Azure Lab Services",
     category: "azure",
