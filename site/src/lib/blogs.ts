@@ -592,6 +592,11 @@ export const BOARDS: Record<string, BoardMetadata> = {
     category: "microsoft-security",
     group: "Security",
   },
+  microsoftsecuritycommunity: {
+    displayName: "Microsoft Security Community",
+    category: "microsoft-security",
+    group: "Security",
+  },
   microsoftdefenderatpblog: {
     displayName: "Microsoft Defender ATP",
     category: "microsoft-security",
@@ -768,6 +773,11 @@ export const BOARDS: Record<string, BoardMetadata> = {
   // Others
   askds: {
     displayName: "Ask Directory Services",
+    category: "azure",
+    group: "Azure",
+  },
+  azureintegrationservicesblog: {
+    displayName: "Azure Integration Services",
     category: "azure",
     group: "Azure",
   },
