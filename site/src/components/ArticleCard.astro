@@ -1,6 +1,6 @@
 ---
 import { type Article, stripHtml, formatBoard } from "../lib/db";
-import { getBlogUrl, getBoardGroup, GROUP_COLORS } from "../lib/blogs";
+import { getBlogUrl, getArticleGroups, GROUP_COLORS } from "../lib/blogs";
 
 interface Props {
   article: Article;
@@ -10,8 +10,7 @@ const { article } = Astro.props;
 const description = stripHtml(article.description);
 const truncatedDescription = description.length > 200 ? description.slice(0, 200) + "..." : description;
 const blogUrl = getBlogUrl(article.board);
-const group = article.board ? getBoardGroup(article.board) : "Others";
-const colors = GROUP_COLORS[group];
+const groups = getArticleGroups(article.title, article.description, article.board);
 ---
 
 <article class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
@@ -52,17 +51,25 @@ const colors = GROUP_COLORS[group];
       blogUrl ? (
         <a
           href={blogUrl}
-          class:list={[colors.bg, colors.text, colors.hover, "px-2 py-0.5 rounded text-xs font-medium transition-colors"]}
+          class="text-blue-600 hover:text-blue-800 hover:underline text-xs font-medium transition-colors"
           target="_blank"
           rel="noopener noreferrer"
         >
           {formatBoard(article.board)}
         </a>
       ) : (
-        <span class:list={[colors.bg, colors.text, "px-2 py-0.5 rounded text-xs font-medium"]}>
+        <span class="text-gray-600 text-xs font-medium">
           {formatBoard(article.board)}
         </span>
       )
     )}
+    {groups.map((group) => {
+      const colors = GROUP_COLORS[group];
+      return (
+        <span class:list={[colors.bg, colors.text, "px-2 py-0.5 rounded text-xs font-medium"]}>
+          {group}
+        </span>
+      );
+    })}
   </div>
 </article>
