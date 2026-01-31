@@ -50,6 +50,86 @@ export const GROUP_COLORS: Record<
   },
 };
 
+/**
+ * Keywords used to identify groups from article title/description.
+ * Keywords are matched case-insensitively against sanitized text.
+ */
+export const GROUP_KEYWORDS: Record<Group, string[]> = {
+  Azure: [
+    "azure",
+    "cosmos db",
+    "cosmosdb",
+    "app service",
+    "aks",
+    "kubernetes",
+    "arm template",
+    "bicep",
+    "azure sql",
+    "blob storage",
+    "azure functions",
+    "azure devops",
+    "azure arc",
+    "synapse",
+    "data factory",
+    "azure ai",
+    "azure ml",
+    "machine learning",
+    "cognitive services",
+    "azure openai",
+  ],
+  "Microsoft 365": [
+    "microsoft 365",
+    "m365",
+    "office 365",
+    "o365",
+    "sharepoint",
+    "onedrive",
+    "teams",
+    "outlook",
+    "exchange",
+    "copilot studio",
+    "viva",
+    "planner",
+    "yammer",
+    "stream",
+    "excel",
+    "word",
+    "powerpoint",
+    "onenote",
+  ],
+  Security: [
+    "security",
+    "defender",
+    "sentinel",
+    "entra",
+    "identity",
+    "zero trust",
+    "threat",
+    "vulnerability",
+    "compliance",
+    "purview",
+    "intune",
+    "conditional access",
+    "mfa",
+    "authentication",
+  ],
+  Windows: [
+    "windows",
+    "win32",
+    "win11",
+    "win10",
+    "powershell",
+    "wsl",
+    "hyper-v",
+    "active directory",
+    "group policy",
+    "registry",
+    "device driver",
+    "surface",
+  ],
+  Others: [],
+};
+
 export interface BoardMetadata {
   displayName: string;
   category: string;
@@ -956,4 +1036,68 @@ export function getBlogUrl(board: string | null): string | undefined {
   }
 
   return undefined;
+}
+
+/**
+ * Sanitize text by removing HTML tags and normalizing whitespace.
+ * Converts HTML content to plain text for keyword matching.
+ */
+export function sanitizeText(html: string | null): string {
+  if (!html) return "";
+  return html
+    .replace(/<[^>]+>/g, " ") // Remove HTML tags
+    .replace(/&nbsp;/gi, " ") // Replace HTML entities
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#\d+;/g, "") // Remove numeric HTML entities
+    .replace(/\s+/g, " ") // Normalize whitespace
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Get groups for an article based on keyword matching in title and description.
+ * Also includes the board's default group if it exists.
+ * Returns unique groups, excluding "Others" unless no other groups match.
+ */
+export function getArticleGroups(
+  title: string | null,
+  description: string | null,
+  board: string | null,
+): Group[] {
+  const groups = new Set<Group>();
+
+  // Add board's default group
+  if (board) {
+    const boardGroup = getBoardGroup(board);
+    if (boardGroup !== "Others") {
+      groups.add(boardGroup);
+    }
+  }
+
+  // Sanitize text for keyword matching
+  const sanitizedText = sanitizeText(`${title ?? ""} ${description ?? ""}`);
+
+  // Check keywords for each group (except Others)
+  for (const group of GROUPS) {
+    if (group === "Others") continue;
+
+    const keywords = GROUP_KEYWORDS[group];
+    for (const keyword of keywords) {
+      if (sanitizedText.includes(keyword.toLowerCase())) {
+        groups.add(group);
+        break; // Found a match, no need to check more keywords for this group
+      }
+    }
+  }
+
+  // If no groups matched, return "Others"
+  if (groups.size === 0) {
+    return ["Others"];
+  }
+
+  // Return groups in the defined order
+  return GROUPS.filter((g) => groups.has(g));
 }

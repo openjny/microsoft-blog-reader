@@ -1,14 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getAllArticles, getTotalCount, stripHtml, formatBoard } from "../lib/db";
-import { getBlogUrl, GROUPS, BOARDS, ALIASES, GROUP_COLORS, getBoardGroup } from "../lib/blogs";
+import { getBlogUrl, GROUPS, GROUP_COLORS, getArticleGroups, type Group } from "../lib/blogs";
 
 const articles = getAllArticles();
 const totalCount = getTotalCount();
 
 // Prepare article data for client-side filtering
 const articlesData = articles.map((a) => {
-  const group = a.board ? getBoardGroup(a.board) : "Others";
+  const groups = getArticleGroups(a.title, a.description, a.board);
   return {
     id: a.id,
     title: a.title,
@@ -19,18 +19,10 @@ const articlesData = articles.map((a) => {
     board: a.board,
     boardFormatted: formatBoard(a.board),
     blogUrl: getBlogUrl(a.board) || null,
-    group: group,
-    colors: GROUP_COLORS[group],
+    groups: groups,
+    groupColors: groups.map((g: Group) => GROUP_COLORS[g]),
   };
 });
-
-// Extract group-to-boardIds mapping for client-side filtering
-const groupBoardIds: Record<string, string[]> = {};
-for (const group of GROUPS) {
-  groupBoardIds[group] = Object.entries(BOARDS)
-    .filter(([, meta]) => meta.group === group)
-    .map(([boardId]) => boardId);
-}
 ---
 
 <Layout title="Microsoft Blog Reader">
@@ -120,7 +112,7 @@ for (const group of GROUPS) {
   </div>
 </Layout>
 
-<script define:vars={{ articlesData, groupBoardIds, ALIASES }}>
+<script define:vars={{ articlesData }}>
   const ITEMS_PER_PAGE = 30;
   let displayCount = ITEMS_PER_PAGE;
   let selectedGroup = '';
@@ -150,24 +142,6 @@ for (const group of GROUPS) {
   searchInput.value = initialQuery;
   selectedGroup = initialGroup;
   updateGroupButtonStyles();
-
-  /**
-   * Normalize a board name to canonical form.
-   * Removes hyphens and underscores, converts to lowercase.
-   */
-  function normalizeBoard(board) {
-    if (!board) return '';
-    return board.toLowerCase().replace(/[-_]/g, '');
-  }
-
-  /**
-   * Resolve a raw board name to its canonical boardId.
-   * Applies normalization and then checks aliases.
-   */
-  function resolveBoardId(board) {
-    const normalized = normalizeBoard(board);
-    return ALIASES[normalized] ?? normalized;
-  }
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -228,10 +202,19 @@ for (const group of GROUPS) {
       ? `<span class="inline-flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg><span>${escapeHtml(article.author)}</span></span>` 
       : '';
 
-    const boardHtml = article.boardFormatted && article.colors
+    // Render group badges (multiple groups supported)
+    let groupBadgesHtml = '';
+    if (article.groups && article.groups.length > 0 && article.groupColors && article.groupColors.length > 0) {
+      groupBadgesHtml = article.groups.map((group, idx) => {
+        const colors = article.groupColors[idx];
+        return `<span class="${colors.bg} ${colors.text} px-2 py-0.5 rounded text-xs font-medium">${escapeHtml(group)}</span>`;
+      }).join('');
+    }
+
+    const boardHtml = article.boardFormatted
       ? article.blogUrl
-        ? `<a href="${escapeHtml(article.blogUrl)}" class="${article.colors.bg} ${article.colors.text} ${article.colors.hover} px-2 py-0.5 rounded text-xs font-medium transition-colors" target="_blank" rel="noopener noreferrer">${escapeHtml(article.boardFormatted)}</a>`
-        : `<span class="${article.colors.bg} ${article.colors.text} px-2 py-0.5 rounded text-xs font-medium">${escapeHtml(article.boardFormatted)}</span>`
+        ? `<a href="${escapeHtml(article.blogUrl)}" class="text-blue-600 hover:text-blue-800 hover:underline text-xs font-medium transition-colors" target="_blank" rel="noopener noreferrer">${escapeHtml(article.boardFormatted)}</a>`
+        : `<span class="text-gray-600 text-xs font-medium">${escapeHtml(article.boardFormatted)}</span>`
       : '';
 
     const descriptionHtml = truncatedDesc 
@@ -255,6 +238,7 @@ for (const group of GROUPS) {
           </span>
           ${authorHtml}
           ${boardHtml}
+          ${groupBadgesHtml}
         </div>
       </article>
     `;
@@ -302,13 +286,10 @@ for (const group of GROUPS) {
       });
     }
 
-    // Filter by group (using normalized boardId with alias resolution)
+    // Filter by group (article can belong to multiple groups)
     if (selectedGroup) {
-      const boardIdsInGroup = groupBoardIds[selectedGroup] || [];
       filtered = filtered.filter(a => {
-        if (!a.board) return false;
-        const resolvedBoardId = resolveBoardId(a.board);
-        return boardIdsInGroup.includes(resolvedBoardId);
+        return a.groups && a.groups.includes(selectedGroup);
       });
     }
 
