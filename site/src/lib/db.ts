@@ -96,9 +96,7 @@ export function stripHtml(html: string | null): string {
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
     .replace(/&quot;/gi, '"')
-    .replace(/&#x([0-9a-f]+);/gi, (_match, hex) =>
-      String.fromCharCode(Number.parseInt(hex, 16)),
-    )
+    .replace(/&#x([0-9a-f]+);/gi, (_match, hex) => String.fromCharCode(Number.parseInt(hex, 16)))
     .replace(/&#(\d+);/g, (_match, dec) => String.fromCharCode(Number(dec)))
     .replace(/&amp;/gi, "&")
     .replace(/\s+/g, " ")
