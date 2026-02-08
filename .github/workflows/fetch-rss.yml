@@ -2,8 +2,9 @@ name: Fetch RSS
 
 on:
   schedule:
-    # Run daily at 22:00 UTC (07:00 JST)
-    - cron: "0 22 * * *"
+    # Run twice daily at 06:00 JST (21:00 UTC) and 18:00 JST (09:00 UTC)
+    - cron: "0 21 * * *"
+    - cron: "0 9 * * *"
   workflow_dispatch:
     # Enable manual trigger
 
