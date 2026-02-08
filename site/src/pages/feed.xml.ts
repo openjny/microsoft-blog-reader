@@ -1,7 +1,7 @@
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
-import { getArticles, stripHtml } from "../lib/db";
 import { getArticleGroups } from "../lib/blogs";
+import { getArticles, stripHtml } from "../lib/db";
 
 /** Maximum number of articles to include in the RSS feed */
 const RSS_FEED_LIMIT = 50;
