@@ -3,7 +3,7 @@
 Fetch Microsoft Tech Community RSS and store articles in SQLite database.
 
 This script:
-1. Fetches RSS feed from Microsoft Tech Community
+1. Fetches RSS feeds from multiple Microsoft sources
 2. Parses and extracts article information
 3. Stores articles in SQLite with UPSERT logic
 """
@@ -21,7 +21,10 @@ from typing import Any
 import feedparser  # type: ignore[import-untyped]
 
 # Configuration
-RSS_URL = "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/Community?interaction.style=blog"
+RSS_URLS = [
+    "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/Community?interaction.style=blog",
+    "https://devblogs.microsoft.com/landing",
+]
 MAX_RETRIES = 3
 RETRY_DELAY = 5  # seconds
 
@@ -108,14 +111,14 @@ def parse_pub_date(entry: Any) -> str:
     return datetime.now(UTC).isoformat()
 
 
-def fetch_rss_with_retry() -> Any:
+def fetch_rss_with_retry(rss_url: str) -> Any:
     """Fetch RSS feed with retry logic."""
     last_error: Exception | None = None
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            logger.info(f"Fetching RSS feed (attempt {attempt}/{MAX_RETRIES})")
-            feed = feedparser.parse(RSS_URL)
+            logger.info(f"Fetching RSS feed from {rss_url} (attempt {attempt}/{MAX_RETRIES})")
+            feed = feedparser.parse(rss_url)
 
             if feed.bozo and feed.bozo_exception:
                 exc = feed.bozo_exception
@@ -126,7 +129,7 @@ def fetch_rss_with_retry() -> Any:
             if not feed.entries:
                 raise ValueError("No entries found in RSS feed")
 
-            logger.info(f"Successfully fetched {len(feed.entries)} entries")
+            logger.info(f"Successfully fetched {len(feed.entries)} entries from {rss_url}")
             return feed
 
         except Exception as e:
@@ -194,8 +197,16 @@ def main() -> int:
     conn = sqlite3.connect(DB_PATH)
     try:
         init_database(conn)
-        feed = fetch_rss_with_retry()
-        new_count = upsert_articles(conn, feed)
+
+        total_new_count = 0
+        for rss_url in RSS_URLS:
+            try:
+                feed = fetch_rss_with_retry(rss_url)
+                new_count = upsert_articles(conn, feed)
+                total_new_count += new_count
+            except Exception as e:
+                logger.error(f"Failed to process feed {rss_url}: {e}")
+                # Continue processing other feeds
 
         # Get total count
         cursor = conn.cursor()
@@ -203,7 +214,7 @@ def main() -> int:
         total_count = cursor.fetchone()[0]
 
         logger.info(
-            f"Process completed successfully. {new_count} new, {total_count} total articles."
+            f"Process completed successfully. {total_new_count} new, {total_count} total articles."
         )
         return 0
 
