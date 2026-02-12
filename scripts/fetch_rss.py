@@ -68,14 +68,22 @@ def init_database(conn: sqlite3.Connection) -> None:
 
 
 def extract_board(url: str) -> str | None:
-    """Extract board identifier from article URL path.
+    """Extract board/blog identifier from article URL path.
 
-    The board is extracted from the URL pattern: /t5/{board}/...
-    Example: /t5/apps-on-azure-blog/... -> 'apps-on-azure-blog'
+    Supports multiple feed sources:
+    - TechCommunity: /t5/{board}/... -> 'apps-on-azure-blog'
+    - DevBlogs: devblogs.microsoft.com/{blog-name}/... -> 'vscode-blog'
     """
+    # TechCommunity pattern: /t5/{board}/
     match = re.search(r"/t5/([^/]+)/", url)
     if match:
         return match.group(1)
+
+    # DevBlogs pattern: devblogs.microsoft.com/{blog-name}/
+    match = re.search(r"devblogs\.microsoft\.com/([^/]+)/", url)
+    if match:
+        return match.group(1)
+
     return None
 
 
