@@ -23,6 +23,8 @@ import feedparser  # type: ignore[import-untyped]
 # Configuration
 RSS_URLS = [
     "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/Community?interaction.style=blog",
+    # DevBlogs landing page aggregates posts from multiple individual blogs
+    # (vscode-blog, dotnet, azure-sql, etc.) allowing proper board categorization
     "https://devblogs.microsoft.com/landing",
 ]
 MAX_RETRIES = 3
