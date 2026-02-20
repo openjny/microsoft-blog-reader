@@ -234,7 +234,7 @@ def main() -> int:
         )
 
         # Return non-zero exit code if all feeds failed
-        if feeds_succeeded == 0 and feeds_failed > 0:
+        if feeds_succeeded == 0 and len(RSS_URLS) > 0:
             logger.error("All feeds failed to process")
             return 1
 
