@@ -151,7 +151,9 @@ def fetch_rss_with_retry(rss_url: str) -> Any:
                 logger.info(f"Retrying in {RETRY_DELAY} seconds...")
                 time.sleep(RETRY_DELAY)
 
-    raise RuntimeError(f"Failed to fetch RSS from {rss_url} after {MAX_RETRIES} attempts: {last_error}")
+    raise RuntimeError(
+        f"Failed to fetch RSS from {rss_url} after {MAX_RETRIES} attempts: {last_error}"
+    )
 
 
 def upsert_articles(conn: sqlite3.Connection, feed: Any) -> int:
