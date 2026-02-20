@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fetch Microsoft Tech Community RSS and store articles in SQLite database.
+Fetch RSS feeds from multiple Microsoft sources and store articles in an SQLite database.
 
 This script:
 1. Fetches RSS feeds from multiple Microsoft sources
@@ -67,12 +67,14 @@ def init_database(conn: sqlite3.Connection) -> None:
     logger.info("Database schema initialized")
 
 
-def extract_board(url: str) -> str | None:
+def extract_board(url: str) -> str:
     """Extract board/blog identifier from article URL path.
 
     Supports multiple feed sources:
     - TechCommunity: /t5/{board}/... -> 'apps-on-azure-blog'
     - DevBlogs: devblogs.microsoft.com/{blog-name}/... -> 'vscode-blog'
+
+    Returns 'unknown' for URLs that don't match any known pattern.
     """
     # TechCommunity pattern: /t5/{board}/
     match = re.search(r"/t5/([^/]+)/", url)
@@ -84,7 +86,7 @@ def extract_board(url: str) -> str | None:
     if match:
         return match.group(1)
 
-    return None
+    return "unknown"
 
 
 def parse_pub_date(entry: Any) -> str:
@@ -142,12 +144,12 @@ def fetch_rss_with_retry(rss_url: str) -> Any:
 
         except Exception as e:
             last_error = e
-            logger.warning(f"Attempt {attempt} failed: {e}")
+            logger.warning(f"Attempt {attempt} failed for {rss_url}: {e}")
             if attempt < MAX_RETRIES:
                 logger.info(f"Retrying in {RETRY_DELAY} seconds...")
                 time.sleep(RETRY_DELAY)
 
-    raise RuntimeError(f"Failed to fetch RSS after {MAX_RETRIES} attempts: {last_error}")
+    raise RuntimeError(f"Failed to fetch RSS from {rss_url} after {MAX_RETRIES} attempts: {last_error}")
 
 
 def upsert_articles(conn: sqlite3.Connection, feed: Any) -> int:
@@ -207,13 +209,18 @@ def main() -> int:
         init_database(conn)
 
         total_new_count = 0
+        feeds_succeeded = 0
+        feeds_failed = 0
+
         for rss_url in RSS_URLS:
             try:
                 feed = fetch_rss_with_retry(rss_url)
                 new_count = upsert_articles(conn, feed)
                 total_new_count += new_count
+                feeds_succeeded += 1
             except Exception as e:
                 logger.error(f"Failed to process feed {rss_url}: {e}")
+                feeds_failed += 1
                 # Continue processing other feeds
 
         # Get total count
@@ -222,8 +229,15 @@ def main() -> int:
         total_count = cursor.fetchone()[0]
 
         logger.info(
-            f"Process completed successfully. {total_new_count} new, {total_count} total articles."
+            f"Process completed. {total_new_count} new, {total_count} total articles. "
+            f"Feeds: {feeds_succeeded} succeeded, {feeds_failed} failed."
         )
+
+        # Return non-zero exit code if all feeds failed
+        if feeds_succeeded == 0 and feeds_failed > 0:
+            logger.error("All feeds failed to process")
+            return 1
+
         return 0
 
     except Exception as e:
