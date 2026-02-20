@@ -26,6 +26,17 @@ Quick commands:
 - `make lint-fix` - Auto-fix lint issues
 - `make format` - Format all code
 
+### Required: Testing Before Task Completion
+
+**IMPORTANT**: Before marking any task as complete or committing final changes:
+
+1. **Run format check**: `make format` or for Python only: `ruff format scripts/`
+2. **Run linters**: `make lint` or for Python only: `ruff check scripts/`
+3. **Run type checkers**: `make typecheck` or for Python only: `mypy scripts/`
+4. **Run all checks**: `make check` (combines all above)
+
+These checks must pass before pushing commits. CI will fail if code is not properly formatted or has linting/type errors.
+
 ## Python Environment
 
 - Use `uv` for local development

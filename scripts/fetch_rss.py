@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Fetch Microsoft Tech Community RSS and store articles in SQLite database.
+Fetch RSS feeds from multiple Microsoft sources and store articles in an SQLite database.
 
 This script:
-1. Fetches RSS feed from Microsoft Tech Community
+1. Fetches RSS feeds from multiple Microsoft sources
 2. Parses and extracts article information
 3. Stores articles in SQLite with UPSERT logic
 """
@@ -21,7 +21,12 @@ from typing import Any
 import feedparser  # type: ignore[import-untyped]
 
 # Configuration
-RSS_URL = "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/Community?interaction.style=blog"
+RSS_URLS = [
+    "https://techcommunity.microsoft.com/t5/s/gxcuf89792/rss/Community?interaction.style=blog",
+    # DevBlogs landing page aggregates posts from multiple individual blogs
+    # (vscode-blog, dotnet, azure-sql, etc.) allowing proper board categorization
+    "https://devblogs.microsoft.com/landing",
+]
 MAX_RETRIES = 3
 RETRY_DELAY = 5  # seconds
 
@@ -64,16 +69,26 @@ def init_database(conn: sqlite3.Connection) -> None:
     logger.info("Database schema initialized")
 
 
-def extract_board(url: str) -> str | None:
-    """Extract board identifier from article URL path.
+def extract_board(url: str) -> str:
+    """Extract board/blog identifier from article URL path.
 
-    The board is extracted from the URL pattern: /t5/{board}/...
-    Example: /t5/apps-on-azure-blog/... -> 'apps-on-azure-blog'
+    Supports multiple feed sources:
+    - TechCommunity: /t5/{board}/... -> 'apps-on-azure-blog'
+    - DevBlogs: devblogs.microsoft.com/{blog-name}/... -> 'vscode-blog'
+
+    Returns 'unknown' for URLs that don't match any known pattern.
     """
+    # TechCommunity pattern: /t5/{board}/
     match = re.search(r"/t5/([^/]+)/", url)
     if match:
         return match.group(1)
-    return None
+
+    # DevBlogs pattern: devblogs.microsoft.com/{blog-name}/
+    match = re.search(r"devblogs\.microsoft\.com/([^/]+)/", url)
+    if match:
+        return match.group(1)
+
+    return "unknown"
 
 
 def parse_pub_date(entry: Any) -> str:
@@ -108,14 +123,14 @@ def parse_pub_date(entry: Any) -> str:
     return datetime.now(UTC).isoformat()
 
 
-def fetch_rss_with_retry() -> Any:
+def fetch_rss_with_retry(rss_url: str) -> Any:
     """Fetch RSS feed with retry logic."""
     last_error: Exception | None = None
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            logger.info(f"Fetching RSS feed (attempt {attempt}/{MAX_RETRIES})")
-            feed = feedparser.parse(RSS_URL)
+            logger.info(f"Fetching RSS feed from {rss_url} (attempt {attempt}/{MAX_RETRIES})")
+            feed = feedparser.parse(rss_url)
 
             if feed.bozo and feed.bozo_exception:
                 exc = feed.bozo_exception
@@ -126,17 +141,19 @@ def fetch_rss_with_retry() -> Any:
             if not feed.entries:
                 raise ValueError("No entries found in RSS feed")
 
-            logger.info(f"Successfully fetched {len(feed.entries)} entries")
+            logger.info(f"Successfully fetched {len(feed.entries)} entries from {rss_url}")
             return feed
 
         except Exception as e:
             last_error = e
-            logger.warning(f"Attempt {attempt} failed: {e}")
+            logger.warning(f"Attempt {attempt} failed for {rss_url}: {e}")
             if attempt < MAX_RETRIES:
                 logger.info(f"Retrying in {RETRY_DELAY} seconds...")
                 time.sleep(RETRY_DELAY)
 
-    raise RuntimeError(f"Failed to fetch RSS after {MAX_RETRIES} attempts: {last_error}")
+    raise RuntimeError(
+        f"Failed to fetch RSS from {rss_url} after {MAX_RETRIES} attempts: {last_error}"
+    )
 
 
 def upsert_articles(conn: sqlite3.Connection, feed: Any) -> int:
@@ -194,8 +211,21 @@ def main() -> int:
     conn = sqlite3.connect(DB_PATH)
     try:
         init_database(conn)
-        feed = fetch_rss_with_retry()
-        new_count = upsert_articles(conn, feed)
+
+        total_new_count = 0
+        feeds_succeeded = 0
+        feeds_failed = 0
+
+        for rss_url in RSS_URLS:
+            try:
+                feed = fetch_rss_with_retry(rss_url)
+                new_count = upsert_articles(conn, feed)
+                total_new_count += new_count
+                feeds_succeeded += 1
+            except Exception as e:
+                logger.error(f"Failed to process feed {rss_url}: {e}")
+                feeds_failed += 1
+                # Continue processing other feeds
 
         # Get total count
         cursor = conn.cursor()
@@ -203,8 +233,15 @@ def main() -> int:
         total_count = cursor.fetchone()[0]
 
         logger.info(
-            f"Process completed successfully. {new_count} new, {total_count} total articles."
+            f"Process completed. {total_new_count} new, {total_count} total articles. "
+            f"Feeds: {feeds_succeeded} succeeded, {feeds_failed} failed."
         )
+
+        # Return non-zero exit code if all feeds failed
+        if feeds_succeeded == 0 and len(RSS_URLS) > 0:
+            logger.error("All feeds failed to process")
+            return 1
+
         return 0
 
     except Exception as e:
